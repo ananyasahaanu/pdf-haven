@@ -509,6 +509,7 @@ export default function Admin() {
           </TabsTrigger>
           <TabsTrigger value="products">Uploaded PDFs</TabsTrigger>
           <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> ইউজার ম্যানেজমেন্ট</TabsTrigger>
+          <TabsTrigger value="settings"><Settings className="mr-1 h-4 w-4" /> Settings</TabsTrigger>
         </TabsList>
 
         {/* Orders Tab */}
