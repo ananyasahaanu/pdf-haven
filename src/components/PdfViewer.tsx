@@ -53,7 +53,16 @@ export function PdfViewer({
         setLoading(true);
         setError(null);
 
-        const response = await fetch(pdfUrl);
+        // Get auth token to pass to edge function
+        const { data: { session } } = await (await import("@/integrations/supabase/client")).supabase.auth.getSession();
+        const headers: Record<string, string> = {
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "",
+        };
+        if (session?.access_token) {
+          headers["Authorization"] = `Bearer ${session.access_token}`;
+        }
+
+        const response = await fetch(pdfUrl, { headers });
         if (!response.ok) throw new Error("Failed to load PDF");
 
         const arrayBuffer = await response.arrayBuffer();
