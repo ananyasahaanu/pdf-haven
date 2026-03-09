@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -98,6 +99,9 @@ export function Navbar() {
               <Search className="h-4 w-4" />
             </Button>
           )}
+
+          {/* Admin Notifications */}
+          <NotificationBell />
 
           {/* Language Toggle */}
           <Button
