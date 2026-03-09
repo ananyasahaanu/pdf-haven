@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { BackgroundDecoration } from "@/components/BackgroundDecoration";
 import Home from "./pages/Home";
 import Browse from "./pages/Browse";
@@ -45,6 +46,7 @@ const App = () => (
             <BrowserRouter>
               <div className="flex min-h-screen flex-col">
                 <BackgroundDecoration />
+                <AnnouncementBanner />
                 <Navbar />
                 <main className="flex-1">
                   <PageTransition>
