@@ -142,11 +142,13 @@ export default function Home() {
             </Button>
           </Link>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <AnimatedGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {bestsellers.slice(0, 4).map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <AnimatedItem key={product.id}>
+              <ProductCard product={product} />
+            </AnimatedItem>
           ))}
-        </div>
+        </AnimatedGrid>
       </section>
 
       {/* Featured */}
@@ -166,11 +168,13 @@ export default function Home() {
               </Button>
             </Link>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <AnimatedGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {featured.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <AnimatedItem key={product.id}>
+                <ProductCard product={product} />
+              </AnimatedItem>
             ))}
-          </div>
+          </AnimatedGrid>
         </div>
       </section>
 
