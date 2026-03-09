@@ -11,7 +11,7 @@ export function AnnouncementBanner() {
   const { data: banner } = useQuery({
     queryKey: ["announcement-banner"],
     queryFn: async () => {
-      const keys = ["banner_text", "banner_link", "banner_active", "banner_type"];
+      const keys = ["banner_text", "banner_link", "banner_active", "banner_type", "banner_image_url"];
       const { data, error } = await supabase
         .from("site_settings")
         .select("key, value")
@@ -23,13 +23,14 @@ export function AnnouncementBanner() {
         link: map.banner_link || "",
         active: map.banner_active === "true",
         type: (map.banner_type as "info" | "success" | "warning" | "promo") || "info",
+        imageUrl: map.banner_image_url || "",
       };
     },
     staleTime: 30_000,
     refetchInterval: 30_000,
   });
 
-  if (!banner?.active || !banner.text || dismissed) return null;
+  if (!banner?.active || (!banner.text && !banner.imageUrl) || dismissed) return null;
 
   const typeStyles: Record<string, string> = {
     info: "bg-primary text-primary-foreground",
@@ -39,15 +40,18 @@ export function AnnouncementBanner() {
   };
 
   const content = (
-    <span className="flex items-center gap-2 text-sm font-medium">
-      <Megaphone className="h-4 w-4 shrink-0" />
-      {banner.text}
+    <span className="flex items-center gap-3 text-sm font-medium">
+      {!banner.imageUrl && <Megaphone className="h-4 w-4 shrink-0" />}
+      {banner.imageUrl && (
+        <img src={banner.imageUrl} alt="Banner" className="h-8 w-auto object-contain shrink-0" />
+      )}
+      {banner.text && <span>{banner.text}</span>}
     </span>
   );
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center px-4 py-3 shadow-lg ${
+      className={`sticky top-0 left-0 right-0 z-50 flex items-center justify-center px-4 py-3 shadow-md ${
         typeStyles[banner.type] || typeStyles.info
       }`}
     >

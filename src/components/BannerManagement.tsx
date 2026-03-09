@@ -16,6 +16,7 @@ export function BannerManagement() {
   const [link, setLink] = useState("");
   const [active, setActive] = useState(false);
   const [type, setType] = useState("info");
+  const [imageUrl, setImageUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -24,12 +25,13 @@ export function BannerManagement() {
       const { data } = await supabase
         .from("site_settings")
         .select("key, value")
-        .in("key", ["banner_text", "banner_link", "banner_active", "banner_type"]);
+        .in("key", ["banner_text", "banner_link", "banner_active", "banner_type", "banner_image_url"]);
       const map = Object.fromEntries((data || []).map((d) => [d.key, d.value]));
       setText(map.banner_text || "");
       setLink(map.banner_link || "");
       setActive(map.banner_active === "true");
       setType(map.banner_type || "info");
+      setImageUrl(map.banner_image_url || "");
       setLoaded(true);
     };
     load();
@@ -43,6 +45,7 @@ export function BannerManagement() {
         { key: "banner_link", value: link },
         { key: "banner_active", value: String(active) },
         { key: "banner_type", value: type },
+        { key: "banner_image_url", value: imageUrl },
       ];
       for (const s of settings) {
         const { data: existing } = await supabase
@@ -94,6 +97,11 @@ export function BannerManagement() {
         <div className="space-y-2">
           <Label>Link (optional)</Label>
           <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="/browse" />
+        </div>
+        <div className="space-y-2">
+          <Label>Image URL (optional)</Label>
+          <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/banner-image.jpg" />
+          <p className="text-xs text-muted-foreground">Add an image to display alongside or instead of text</p>
         </div>
         <div className="space-y-2">
           <Label>Style</Label>

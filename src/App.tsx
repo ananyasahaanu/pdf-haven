@@ -48,6 +48,7 @@ const App = () => (
             <BrowserRouter>
               <div className="flex min-h-screen flex-col">
                 <BackgroundDecoration />
+                <AnnouncementBanner />
                 <Navbar />
                 <main className="flex-1">
                   <PageTransition>
@@ -77,7 +78,6 @@ const App = () => (
                   </PageTransition>
                 </main>
                 <Footer />
-                <AnnouncementBanner />
               </div>
             </BrowserRouter>
           </TooltipProvider>
