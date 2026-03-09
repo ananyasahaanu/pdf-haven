@@ -32,49 +32,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const mapSupabaseUser = async (supabaseUser: SupabaseUser | null) => {
-    if (!supabaseUser) {
-      setUser(null);
-      setIsAdmin(false);
-      return;
+  const mapSupabaseUser = useCallback(async (supabaseUser: SupabaseUser | null) => {
+    try {
+      if (!supabaseUser) {
+        setUser(null);
+        setIsAdmin(false);
+        return;
+      }
+
+      // Get profile (don't fail auth state if profile query fails)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name, email")
+        .eq("id", supabaseUser.id)
+        .maybeSingle();
+
+      setUser({
+        id: supabaseUser.id,
+        name: profile?.name || supabaseUser.user_metadata?.name || "",
+        email: profile?.email || supabaseUser.email || "",
+      });
+
+      // Check admin role
+      const { data: roleCheck } = await supabase.rpc("has_role", {
+        _user_id: supabaseUser.id,
+        _role: "admin",
+      });
+      setIsAdmin(!!roleCheck);
+    } catch (error) {
+      console.error("Auth user mapping error:", error);
+      // Fallback user state so login flow doesn't hang
+      if (supabaseUser) {
+        setUser({
+          id: supabaseUser.id,
+          name: supabaseUser.user_metadata?.name || "",
+          email: supabaseUser.email || "",
+        });
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
     }
-
-    // Get profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("name, email")
-      .eq("id", supabaseUser.id)
-      .single();
-
-    setUser({
-      id: supabaseUser.id,
-      name: profile?.name || supabaseUser.user_metadata?.name || "",
-      email: profile?.email || supabaseUser.email || "",
-    });
-
-    // Check admin role
-    const { data: roleCheck } = await supabase.rpc("has_role", {
-      _user_id: supabaseUser.id,
-      _role: "admin",
-    });
-    setIsAdmin(!!roleCheck);
-  };
+  }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        await mapSupabaseUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    let mounted = true;
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      await mapSupabaseUser(session?.user ?? null);
-      setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Don't await inside auth callback to avoid deadlocks
+      void mapSupabaseUser(session?.user ?? null).finally(() => {
+        if (mounted) setLoading(false);
+      });
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      void mapSupabaseUser(session?.user ?? null).finally(() => {
+        if (mounted) setLoading(false);
+      });
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [mapSupabaseUser]);
 
   const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
