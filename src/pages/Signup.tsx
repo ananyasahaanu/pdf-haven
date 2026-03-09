@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BookOpen, UserPlus } from "lucide-react";
+import { BookOpen, UserPlus, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { lovable } from "@/integrations/lovable/index";
 import { Separator } from "@/components/ui/separator";
@@ -16,6 +16,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -25,8 +26,7 @@ export default function Signup() {
     setLoading(true);
     const success = await signup(name, email, password);
     if (success) {
-      toast({ title: "Account created!", description: "Welcome to PDFStore." });
-      navigate("/");
+      setEmailSent(true);
     } else {
       toast({ title: "Signup failed", description: "Email already exists or password too short.", variant: "destructive" });
     }
@@ -43,6 +43,27 @@ export default function Signup() {
     }
     setGoogleLoading(false);
   };
+
+  if (emailSent) {
+    return (
+      <div className="flex min-h-[80vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <Mail className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle className="font-display text-2xl">Verify Your Email</CardTitle>
+            <CardDescription>We've sent a verification link to <strong>{email}</strong>. Please check your inbox and click the link to activate your account.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Link to="/login">
+              <Button variant="outline">Go to Login</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
