@@ -23,9 +23,7 @@ export default function Signup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
     const success = await signup(name, email, password);
-    
     if (success) {
       toast({ title: "Account created!", description: "Welcome to PDFStore." });
       navigate("/");
@@ -57,13 +55,7 @@ export default function Signup() {
           <CardDescription>Join PDFStore and start learning</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full mb-4"
-            onClick={handleGoogleSignIn}
-            disabled={googleLoading}
-          >
+          <Button type="button" variant="outline" className="w-full mb-4" onClick={handleGoogleSignIn} disabled={googleLoading}>
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -78,67 +70,6 @@ export default function Signup() {
               <span className="bg-card px-2 text-muted-foreground">or</span>
             </div>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
-            </div>
-            <Button type="submit" className="w-full gradient-bg text-primary-foreground border-0" disabled={loading}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              {loading ? "Creating account..." : "Create Account"}
-            </Button>
-          </form>
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/login" className="font-medium text-primary hover:underline">Sign in</Link>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    const success = await signup(name, email, password);
-    
-    if (success) {
-      toast({ title: "Account created!", description: "Welcome to PDFStore." });
-      navigate("/");
-    } else {
-      toast({ title: "Signup failed", description: "Email already exists or password too short.", variant: "destructive" });
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl gradient-bg">
-            <BookOpen className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <CardTitle className="font-display text-2xl">Create Account</CardTitle>
-          <CardDescription>Join PDFStore and start learning</CardDescription>
-        </CardHeader>
-        <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
