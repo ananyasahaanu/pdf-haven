@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,12 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, Library, LogIn, LogOut, Menu, Moon, Search, Shield, Sun, User, X } from "lucide-react";
+import { BookOpen, Languages, Library, LogIn, LogOut, Menu, Moon, Search, Shield, Sun, User, X } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -44,16 +46,16 @@ export function Navbar() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           <Link to="/">
-            <Button variant="ghost" size="sm">Home</Button>
+            <Button variant="ghost" size="sm">{t("nav.home")}</Button>
           </Link>
           <Link to="/browse">
-            <Button variant="ghost" size="sm">Browse PDFs</Button>
+            <Button variant="ghost" size="sm">{t("nav.browse")}</Button>
           </Link>
           {isAuthenticated && (
             <Link to="/library">
               <Button variant="ghost" size="sm">
                 <Library className="mr-1 h-4 w-4" />
-                My Library
+                {t("nav.library")}
               </Button>
             </Link>
           )}
@@ -61,7 +63,7 @@ export function Navbar() {
             <Link to="/admin">
               <Button variant="ghost" size="sm">
                 <Shield className="mr-1 h-4 w-4" />
-                Admin
+                {t("nav.admin")}
               </Button>
             </Link>
           )}
@@ -89,6 +91,17 @@ export function Navbar() {
             </Button>
           )}
 
+          {/* Language Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+            title={language === "en" ? "বাংলায় পড়ুন" : "Read in English"}
+          >
+            <Languages className="h-4 w-4" />
+          </Button>
+
           {/* Theme Toggle */}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleTheme}>
             {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
@@ -107,16 +120,16 @@ export function Navbar() {
                 <div className="px-2 pb-1.5 text-xs text-muted-foreground">{user?.email}</div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/library")}>
-                  <Library className="mr-2 h-4 w-4" /> My Library
+                  <Library className="mr-2 h-4 w-4" /> {t("nav.library")}
                 </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => navigate("/admin")}>
-                    <Shield className="mr-2 h-4 w-4" /> Admin Panel
+                    <Shield className="mr-2 h-4 w-4" /> {t("nav.adminPanel")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
-                  <LogOut className="mr-2 h-4 w-4" /> Logout
+                  <LogOut className="mr-2 h-4 w-4" /> {t("nav.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -124,7 +137,7 @@ export function Navbar() {
             <Link to="/login">
               <Button size="sm" className="gradient-bg text-primary-foreground border-0">
                 <LogIn className="mr-1 h-4 w-4" />
-                Login
+                {t("nav.login")}
               </Button>
             </Link>
           )}
@@ -146,22 +159,22 @@ export function Navbar() {
         <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl">
           <nav className="container flex flex-col gap-1 py-4">
             <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start">Home</Button>
+              <Button variant="ghost" className="w-full justify-start">{t("nav.home")}</Button>
             </Link>
             <Link to="/browse" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start">Browse PDFs</Button>
+              <Button variant="ghost" className="w-full justify-start">{t("nav.browse")}</Button>
             </Link>
             {isAuthenticated && (
               <Link to="/library" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start">
-                  <Library className="mr-2 h-4 w-4" /> My Library
+                  <Library className="mr-2 h-4 w-4" /> {t("nav.library")}
                 </Button>
               </Link>
             )}
             {isAdmin && (
               <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start">
-                  <Shield className="mr-2 h-4 w-4" /> Admin
+                  <Shield className="mr-2 h-4 w-4" /> {t("nav.admin")}
                 </Button>
               </Link>
             )}

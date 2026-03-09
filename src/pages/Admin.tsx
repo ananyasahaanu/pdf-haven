@@ -14,7 +14,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save } from "lucide-react";
+import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -229,6 +229,48 @@ export default function Admin() {
       refetchAdmins();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  // CEO Photo
+  const ceoPhotoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCeoPhoto, setUploadingCeoPhoto] = useState(false);
+
+  const { data: ceoPhotoUrl, refetch: refetchCeoPhoto } = useQuery({
+    queryKey: ["ceo-photo-admin"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "ceo_photo_url").single();
+      return data?.value || null;
+    },
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  const handleCeoPhotoUpload = async (file: File) => {
+    if (!user) return;
+    setUploadingCeoPhoto(true);
+    try {
+      const path = `ceo/${Date.now()}_${file.name}`;
+      const { error: uploadErr } = await supabase.storage.from("covers").upload(path, file);
+      if (uploadErr) throw uploadErr;
+      const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
+
+      // Upsert site_settings
+      const { data: existing } = await supabase.from("site_settings").select("key").eq("key", "ceo_photo_url").single();
+      if (existing) {
+        const { error } = await supabase.from("site_settings").update({ value: urlData.publicUrl }).eq("key", "ceo_photo_url");
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("site_settings").insert({ key: "ceo_photo_url", value: urlData.publicUrl });
+        if (error) throw error;
+      }
+
+      toast({ title: "CEO photo updated!", description: "The About page will now show the new photo." });
+      refetchCeoPhoto();
+      queryClient.invalidateQueries({ queryKey: ["ceo-photo"] });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingCeoPhoto(false);
     }
   };
 
@@ -467,6 +509,7 @@ export default function Admin() {
           </TabsTrigger>
           <TabsTrigger value="products">Uploaded PDFs</TabsTrigger>
           <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> ইউজার ম্যানেজমেন্ট</TabsTrigger>
+          <TabsTrigger value="settings"><Settings className="mr-1 h-4 w-4" /> Settings</TabsTrigger>
         </TabsList>
 
         {/* Orders Tab */}
@@ -679,6 +722,52 @@ export default function Admin() {
                   )}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="mt-4">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
+                <Image className="h-5 w-5" /> CEO Photo
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Upload a photo for the CEO. This will be displayed on the About CEO page.
+              </p>
+              <div className="flex items-center gap-6">
+                {ceoPhotoUrl ? (
+                  <img src={ceoPhotoUrl} alt="CEO" className="h-24 w-24 rounded-full object-cover shadow-md border-4 border-primary/20" />
+                ) : (
+                  <div className="h-24 w-24 rounded-full gradient-bg flex items-center justify-center text-primary-foreground">
+                    <span className="font-display text-3xl font-bold">BS</span>
+                  </div>
+                )}
+                <div>
+                  <input
+                    ref={ceoPhotoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleCeoPhotoUpload(file);
+                    }}
+                  />
+                  <Button
+                    onClick={() => ceoPhotoInputRef.current?.click()}
+                    disabled={uploadingCeoPhoto}
+                    className="gradient-bg text-primary-foreground border-0"
+                  >
+                    {uploadingCeoPhoto ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
+                    ) : (
+                      <><Upload className="mr-2 h-4 w-4" /> {ceoPhotoUrl ? "Change Photo" : "Upload Photo"}</>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
