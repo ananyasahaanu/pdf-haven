@@ -171,6 +171,32 @@ export default function Home() {
         </section>
       )}
 
+      {/* Latest PDFs */}
+      {(isLoading || products.length > 0) && (
+        <section className="container py-16">
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-2xl font-bold md:text-3xl">
+                <BookOpen className="mr-2 inline h-6 w-6 text-primary" /> {t("home.browseByCategory") || "Latest PDFs"}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">Our newest additions</p>
+            </div>
+            <Link to="/browse"><Button variant="ghost" size="sm">{t("home.viewAll")} <ArrowRight className="ml-1 h-4 w-4" /></Button></Link>
+          </div>
+          {isLoading ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {[1,2,3,4].map(i => <Skeleton key={i} className="h-72 rounded-xl" />)}
+            </div>
+          ) : (
+            <AnimatedGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {products.slice(0, 8).map((product) => (
+                <AnimatedItem key={product.id}><ProductCard product={product} /></AnimatedItem>
+              ))}
+            </AnimatedGrid>
+          )}
+        </section>
+      )}
+
       {/* Categories */}
       <section className="container py-16">
         <h2 className="mb-8 text-center font-display text-2xl font-bold md:text-3xl">{t("home.browseByCategory")}</h2>
