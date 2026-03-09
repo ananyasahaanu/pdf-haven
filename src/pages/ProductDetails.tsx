@@ -20,7 +20,13 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   const { isAuthenticated, hasPurchased } = useAuth();
   const { data: product, isLoading, error } = useProduct(id || "");
-  const [previewLoading, setPreviewLoading] = useState(true);
+
+  // Build the preview URL using the edge function
+  const previewUrl = useMemo(() => {
+    if (!id) return "";
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "puwzvzrlzhczwcyqufuo";
+    return `https://${projectId}.supabase.co/functions/v1/preview-pdf?product_id=${id}`;
+  }, [id]);
 
   if (isLoading) {
     return (
