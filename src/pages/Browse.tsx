@@ -106,7 +106,7 @@ export default function Browse() {
       {filteredProducts.length > 0 ? (
         <>
           <p className="mb-4 text-sm text-muted-foreground">{filteredProducts.length} results</p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
