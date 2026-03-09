@@ -9,6 +9,8 @@ import { ArrowLeft, CheckCircle, Download, Eye, Lock, ShoppingCart, Star, BookOp
 import { ReviewSection } from "@/components/ReviewSection";
 import { WishlistButton } from "@/components/WishlistButton";
 import { ShareButtons } from "@/components/ShareButtons";
+import { SEOHead } from "@/components/SEOHead";
+import { ReadingProgress } from "@/components/ReadingProgress";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
