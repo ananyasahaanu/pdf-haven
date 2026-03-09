@@ -62,7 +62,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-border/40 pt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-8 border-t border-border/40 pt-6 pb-14 text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} PDFStore. {t("footer.rights")}
         </div>
       </div>
