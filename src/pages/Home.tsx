@@ -7,6 +7,7 @@ import { ArrowRight, BookOpen, Download, Shield, Sparkles, TrendingUp, Zap } fro
 import { AnimatedGrid, AnimatedItem } from "@/components/AnimatedSection";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -19,6 +20,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="PDFStore — Premium Digital PDF Marketplace"
+        description="Discover and purchase premium educational PDFs from expert authors. Preview before you buy, download instantly."
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "PDFStore",
+          description: "Premium Digital PDF Marketplace",
+          potentialAction: { "@type": "SearchAction", target: "{search_term_string}", "query-input": "required name=search_term_string" },
+        }}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 overflow-hidden">

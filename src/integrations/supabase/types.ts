@@ -146,6 +146,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_progress: {
+        Row: {
+          created_at: string
+          current_page: number
+          id: string
+          last_read_at: string
+          product_id: string
+          total_pages: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_page?: number
+          id?: string
+          last_read_at?: string
+          product_id: string
+          total_pages?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_page?: number
+          id?: string
+          last_read_at?: string
+          product_id?: string
+          total_pages?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
