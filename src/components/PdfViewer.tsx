@@ -17,6 +17,8 @@ import {
 // Configure pdf.js worker via CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
+const PREVIEW_PAGE_LIMIT = 3;
+
 interface PdfViewerProps {
   pdfUrl: string;
   purchased: boolean;
@@ -134,12 +136,15 @@ export function PdfViewer({
     renderPage();
   }, [pdf, currentPage, scale]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Enforce page limit for non-purchasers
+  const maxAllowedPage = purchased ? numPages : Math.min(PREVIEW_PAGE_LIMIT, numPages);
+
   const goToPrev = () => {
     if (currentPage > 1) setCurrentPage((p) => p - 1);
   };
 
   const goToNext = () => {
-    if (currentPage < numPages) setCurrentPage((p) => p + 1);
+    if (currentPage < maxAllowedPage) setCurrentPage((p) => p + 1);
   };
 
   const zoomIn = () => setScale((s) => Math.min(s + 0.25, 3));
@@ -147,7 +152,7 @@ export function PdfViewer({
   const resetZoom = () => setScale(1.5);
 
   const displayTotalPages = totalPages || numPages;
-  const isRestricted = !purchased && numPages < (totalPages || Infinity);
+  const isRestricted = !purchased && numPages > PREVIEW_PAGE_LIMIT;
 
   if (loading) {
     return (
@@ -201,14 +206,14 @@ export function PdfViewer({
             </span>
             <span className="text-xs text-muted-foreground">/</span>
             <span className="text-sm text-muted-foreground tabular-nums">
-              {numPages}
+              {maxAllowedPage}
             </span>
             {isRestricted && (
               <Badge
                 variant="secondary"
                 className="ml-1 text-[10px] px-1.5 py-0"
               >
-                of {displayTotalPages}
+                of {displayTotalPages} total
               </Badge>
             )}
           </div>
@@ -218,7 +223,7 @@ export function PdfViewer({
             size="icon"
             className="h-8 w-8"
             onClick={goToNext}
-            disabled={currentPage >= numPages}
+            disabled={currentPage >= maxAllowedPage}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -289,8 +294,8 @@ export function PdfViewer({
         </div>
       </div>
 
-      {/* Restricted notice */}
-      {isRestricted && currentPage === numPages && (
+      {/* Restricted notice - show when on last allowed page */}
+      {isRestricted && currentPage === maxAllowedPage && (
         <div className="mt-4 rounded-xl border border-border bg-card p-6 text-center space-y-3">
           <div className="flex justify-center">
             <div className="rounded-full bg-muted p-3">
@@ -302,7 +307,7 @@ export function PdfViewer({
               Preview ends here
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              You're viewing {numPages} of {displayTotalPages} pages. Purchase
+              You're viewing {maxAllowedPage} of {displayTotalPages} pages. Purchase
               to unlock the full PDF.
             </p>
           </div>
