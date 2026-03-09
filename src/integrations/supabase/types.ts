@@ -35,6 +35,54 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_requests: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          customer_mobile: string
+          customer_name: string
+          id: string
+          payment_method: string
+          product_id: string
+          product_price: number
+          product_title: string
+          status: string
+          transaction_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          customer_mobile: string
+          customer_name: string
+          id?: string
+          payment_method?: string
+          product_id: string
+          product_price?: number
+          product_title: string
+          status?: string
+          transaction_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          customer_mobile?: string
+          customer_name?: string
+          id?: string
+          payment_method?: string
+          product_id?: string
+          product_price?: number
+          product_title?: string
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       uploaded_pdfs: {
         Row: {
           category: string
