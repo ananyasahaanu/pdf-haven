@@ -6,11 +6,13 @@ import { useProducts, useCategories } from "@/hooks/useProducts";
 import { ArrowRight, BookOpen, Download, Shield, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { AnimatedGrid, AnimatedItem } from "@/components/AnimatedSection";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Home() {
   const navigate = useNavigate();
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = [] } = useCategories();
+  const { t } = useLanguage();
 
   const bestsellers = products.filter((p) => p.isBestseller);
   const featured = products.filter((p) => p.isFeatured);
@@ -46,28 +48,28 @@ export default function Home() {
         <div className="container py-20 md:py-32">
           <div className="mx-auto max-w-3xl text-center">
             <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm glass-card">
-              <Sparkles className="mr-1 h-3 w-3" /> Premium Digital Library
+              <Sparkles className="mr-1 h-3 w-3" /> {t("home.badge")}
             </Badge>
             <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl md:leading-tight">
-              Discover Premium{" "}
-              <span className="gradient-text">Educational PDFs</span>
+              {t("home.title1")}{" "}
+              <span className="gradient-text">{t("home.title2")}</span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-              Access curated, high-quality digital books from expert authors. Preview before you buy, download instantly.
+              {t("home.subtitle")}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button size="lg" className="gradient-bg text-primary-foreground border-0 premium-shadow px-8" onClick={() => navigate("/browse")}>
-                Browse Collection <ArrowRight className="ml-2 h-4 w-4" />
+                {t("home.browseCta")} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" className="bg-background/50 backdrop-blur-sm" onClick={() => navigate("/browse?category=Programming")}>
-                Top Categories
+                {t("home.topCategories")}
               </Button>
             </div>
             <div className="mt-16 grid grid-cols-3 gap-4 md:gap-8">
               {[
-                { label: "PDFs Available", value: `${products.length}+`, icon: BookOpen },
-                { label: "Happy Readers", value: "10K+", icon: TrendingUp },
-                { label: "Expert Authors", value: "50+", icon: Shield },
+                { label: t("home.pdfsAvailable"), value: `${products.length}+`, icon: BookOpen },
+                { label: t("home.happyReaders"), value: "10K+", icon: TrendingUp },
+                { label: t("home.expertAuthors"), value: "50+", icon: Shield },
               ].map((stat) => (
                 <div key={stat.label} className="text-center rounded-xl bg-card/60 backdrop-blur-sm p-4 border border-border/30">
                   <stat.icon className="mx-auto mb-2 h-5 w-5 text-primary" />
@@ -85,9 +87,9 @@ export default function Home() {
         <div className="container py-12">
           <div className="grid gap-8 sm:grid-cols-3">
             {[
-              { icon: Zap, title: "Instant Download", desc: "Get your PDFs immediately after purchase" },
-              { icon: BookOpen, title: "Free Preview", desc: "Preview pages before buying" },
-              { icon: Download, title: "Lifetime Access", desc: "Download your purchases anytime" },
+              { icon: Zap, title: t("home.instantDownload"), desc: t("home.instantDownloadDesc") },
+              { icon: BookOpen, title: t("home.freePreview"), desc: t("home.freePreviewDesc") },
+              { icon: Download, title: t("home.lifetimeAccess"), desc: t("home.lifetimeAccessDesc") },
             ].map((feature) => (
               <div key={feature.title} className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent">
@@ -109,11 +111,11 @@ export default function Home() {
           <div className="mb-8 flex items-center justify-between">
             <div>
               <h2 className="font-display text-2xl font-bold md:text-3xl">
-                <TrendingUp className="mr-2 inline h-6 w-6 text-primary" /> Bestsellers
+                <TrendingUp className="mr-2 inline h-6 w-6 text-primary" /> {t("home.bestsellers")}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">Most popular picks from our readers</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("home.bestsellersSub")}</p>
             </div>
-            <Link to="/browse"><Button variant="ghost" size="sm">View All <ArrowRight className="ml-1 h-4 w-4" /></Button></Link>
+            <Link to="/browse"><Button variant="ghost" size="sm">{t("home.viewAll")} <ArrowRight className="ml-1 h-4 w-4" /></Button></Link>
           </div>
           {isLoading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -136,11 +138,11 @@ export default function Home() {
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <h2 className="font-display text-2xl font-bold md:text-3xl">
-                  <Sparkles className="mr-2 inline h-6 w-6 text-primary" /> Featured Collection
+                  <Sparkles className="mr-2 inline h-6 w-6 text-primary" /> {t("home.featured")}
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">Hand-picked by our editorial team</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("home.featuredSub")}</p>
               </div>
-              <Link to="/browse"><Button variant="ghost" size="sm">View All <ArrowRight className="ml-1 h-4 w-4" /></Button></Link>
+              <Link to="/browse"><Button variant="ghost" size="sm">{t("home.viewAll")} <ArrowRight className="ml-1 h-4 w-4" /></Button></Link>
             </div>
             {isLoading ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -159,7 +161,7 @@ export default function Home() {
 
       {/* Categories */}
       <section className="container py-16">
-        <h2 className="mb-8 text-center font-display text-2xl font-bold md:text-3xl">Browse by Category</h2>
+        <h2 className="mb-8 text-center font-display text-2xl font-bold md:text-3xl">{t("home.browseByCategory")}</h2>
         <div className="flex flex-wrap justify-center gap-3">
           {categories.filter(c => c !== "All").map((cat) => (
             <Link key={cat} to={`/browse?category=${cat}`}>
@@ -172,12 +174,12 @@ export default function Home() {
       {/* CTA */}
       <section className="container pb-20">
         <div className="rounded-2xl gradient-bg p-8 md:p-16 text-center premium-shadow-lg">
-          <h2 className="font-display text-2xl md:text-4xl font-bold text-primary-foreground">Ready to Start Learning?</h2>
+          <h2 className="font-display text-2xl md:text-4xl font-bold text-primary-foreground">{t("home.readyCta")}</h2>
           <p className="mx-auto mt-4 max-w-md text-primary-foreground/80">
-            Join thousands of readers who are expanding their knowledge with our premium PDF collection.
+            {t("home.readyCtaSub")}
           </p>
           <Button size="lg" variant="secondary" className="mt-8" onClick={() => navigate("/browse")}>
-            Explore Now <ArrowRight className="ml-2 h-4 w-4" />
+            {t("home.exploreNow")} <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </section>
