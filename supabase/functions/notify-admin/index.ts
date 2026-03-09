@@ -54,34 +54,6 @@ serve(async (req) => {
       results.email = 'skipped (no RESEND_API_KEY or ADMIN_EMAIL)';
     }
 
-    // --- Slack via Connector Gateway ---
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const SLACK_API_KEY = Deno.env.get('SLACK_API_KEY');
-    const SLACK_CHANNEL = Deno.env.get('SLACK_CHANNEL') || '#general';
-    if (LOVABLE_API_KEY && SLACK_API_KEY) {
-      try {
-        const GATEWAY_URL = 'https://connector-gateway.lovable.dev/slack/api';
-        const slackRes = await fetch(`${GATEWAY_URL}/chat.postMessage`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-            'X-Connection-Api-Key': SLACK_API_KEY,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            channel: SLACK_CHANNEL,
-            text: `🛒 *New Purchase Request*\n• Customer: ${customer_name}\n• Product: ${product_title}\n• Price: ৳${product_price}\n• Payment: ${payment_method}\n• TXN: ${transaction_id}`,
-          }),
-        });
-        const slackData = await slackRes.json();
-        results.slack = slackRes.ok && slackData.ok ? 'sent' : `failed: ${JSON.stringify(slackData)}`;
-      } catch (e) {
-        results.slack = `error: ${e.message}`;
-      }
-    } else {
-      results.slack = 'skipped (no SLACK credentials)';
-    }
-
     console.log('Notification results:', results);
 
     return new Response(JSON.stringify({ success: true, results }), {
