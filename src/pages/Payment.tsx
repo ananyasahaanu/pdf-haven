@@ -149,6 +149,23 @@ export default function Payment() {
             <Button size="lg" className="w-full gradient-bg text-primary-foreground border-0 premium-shadow" onClick={handleSubmit} disabled={submitting}>
               {submitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> সাবমিট হচ্ছে...</> : <><Send className="mr-2 h-5 w-5" /> অর্ডার রিকোয়েস্ট সাবমিট করুন</>}
             </Button>
+
+            {/* International Buyer Notice */}
+            <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+              <CardContent className="flex items-start gap-3 p-4">
+                <Globe className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-sm">Buying from outside Bangladesh?</h4>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    If you are located outside of Bangladesh and want to purchase, please{" "}
+                    <a href="/contact" className="text-primary hover:underline font-medium">contact us</a>{" "}
+                    or email us at{" "}
+                    <a href="mailto:bsrittik@gmail.com" className="text-primary hover:underline font-medium">bsrittik@gmail.com</a>{" "}
+                    for alternative payment options.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
           <div className="md:col-span-2">
             <Card className="sticky top-24">
