@@ -17,6 +17,7 @@ import {
 import { BarChart3, BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Tag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { CouponManagement } from "@/components/CouponManagement";
+import { BannerManagement } from "@/components/BannerManagement";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
