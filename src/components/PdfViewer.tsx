@@ -206,14 +206,14 @@ export function PdfViewer({
             </span>
             <span className="text-xs text-muted-foreground">/</span>
             <span className="text-sm text-muted-foreground tabular-nums">
-              {numPages}
+              {maxAllowedPage}
             </span>
             {isRestricted && (
               <Badge
                 variant="secondary"
                 className="ml-1 text-[10px] px-1.5 py-0"
               >
-                of {displayTotalPages}
+                of {displayTotalPages} total
               </Badge>
             )}
           </div>
