@@ -232,6 +232,48 @@ export default function Admin() {
     }
   };
 
+  // CEO Photo
+  const ceoPhotoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCeoPhoto, setUploadingCeoPhoto] = useState(false);
+
+  const { data: ceoPhotoUrl, refetch: refetchCeoPhoto } = useQuery({
+    queryKey: ["ceo-photo-admin"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "ceo_photo_url").single();
+      return data?.value || null;
+    },
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  const handleCeoPhotoUpload = async (file: File) => {
+    if (!user) return;
+    setUploadingCeoPhoto(true);
+    try {
+      const path = `ceo/${Date.now()}_${file.name}`;
+      const { error: uploadErr } = await supabase.storage.from("covers").upload(path, file);
+      if (uploadErr) throw uploadErr;
+      const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
+
+      // Upsert site_settings
+      const { data: existing } = await supabase.from("site_settings").select("key").eq("key", "ceo_photo_url").single();
+      if (existing) {
+        const { error } = await supabase.from("site_settings").update({ value: urlData.publicUrl }).eq("key", "ceo_photo_url");
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("site_settings").insert({ key: "ceo_photo_url", value: urlData.publicUrl });
+        if (error) throw error;
+      }
+
+      toast({ title: "CEO photo updated!", description: "The About page will now show the new photo." });
+      refetchCeoPhoto();
+      queryClient.invalidateQueries({ queryKey: ["ceo-photo"] });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingCeoPhoto(false);
+    }
+  };
+
   const resetForm = () => {
     setTitle(""); setDescription(""); setPrice(""); setOriginalPrice(""); setCategory(""); setPages("");
     setPdfFile(null); setCoverFile(null);
