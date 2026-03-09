@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle, Download, Eye, Lock, ShoppingCart, Star, BookOpen } from "lucide-react";
 import { ReviewSection } from "@/components/ReviewSection";
 import { WishlistButton } from "@/components/WishlistButton";
+import { ShareButtons } from "@/components/ShareButtons";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -126,6 +127,10 @@ export default function ProductDetails() {
               <span className="text-sm font-medium text-success">You own this PDF</span>
             </div>
           )}
+
+          <div className="mt-6">
+            <ShareButtons title={product.title} productId={product.id} />
+          </div>
 
           <div className="mt-10">
             <h2 className="font-display text-xl font-bold mb-4"><Eye className="mr-2 inline h-5 w-5" /> Preview</h2>
