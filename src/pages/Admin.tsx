@@ -14,8 +14,9 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { BarChart3, BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
+import { BarChart3, BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Tag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
+import { CouponManagement } from "@/components/CouponManagement";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -511,6 +512,7 @@ export default function Admin() {
           </TabsTrigger>
           <TabsTrigger value="products">Uploaded PDFs</TabsTrigger>
           <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> ইউজার ম্যানেজমেন্ট</TabsTrigger>
+          <TabsTrigger value="coupons"><Tag className="mr-1 h-4 w-4" /> Coupons</TabsTrigger>
           <TabsTrigger value="settings"><Settings className="mr-1 h-4 w-4" /> Settings</TabsTrigger>
         </TabsList>
 
@@ -731,6 +733,11 @@ export default function Admin() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Coupons Tab */}
+        <TabsContent value="coupons" className="mt-4">
+          <CouponManagement />
         </TabsContent>
 
         {/* Settings Tab */}
