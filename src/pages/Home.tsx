@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/ProductCard";
 import { products, getBestsellers, getFeaturedProducts, categories } from "@/data/products";
 import { ArrowRight, BookOpen, Download, Shield, Sparkles, TrendingUp, Zap } from "lucide-react";
+import heroBg from "@/assets/hero-bg.jpg";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -14,15 +15,22 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Background decoration */}
+        {/* Background Image */}
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-premium-glow/5 blur-3xl" />
+          <img
+            src={heroBg}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          {/* Overlay for readability */}
+          <div className="absolute inset-0 bg-background/70 dark:bg-background/80 backdrop-blur-sm" />
+          {/* Gradient fade to content */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         </div>
 
         <div className="container py-20 md:py-32">
           <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm">
+            <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm glass-card">
               <Sparkles className="mr-1 h-3 w-3" /> Premium Digital Library
             </Badge>
             
@@ -47,6 +55,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
+                className="bg-background/50 backdrop-blur-sm"
                 onClick={() => navigate("/browse?category=Programming")}
               >
                 Top Categories
@@ -60,7 +69,7 @@ export default function Home() {
                 { label: "Happy Readers", value: "10K+", icon: TrendingUp },
                 { label: "Expert Authors", value: "50+", icon: Shield },
               ].map((stat) => (
-                <div key={stat.label} className="text-center">
+                <div key={stat.label} className="text-center rounded-xl bg-card/60 backdrop-blur-sm p-4 border border-border/30">
                   <stat.icon className="mx-auto mb-2 h-5 w-5 text-primary" />
                   <div className="font-display text-2xl font-bold">{stat.value}</div>
                   <div className="text-xs text-muted-foreground">{stat.label}</div>
