@@ -14,7 +14,8 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
+import { BarChart3, BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
+import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -501,8 +502,9 @@ export default function Admin() {
         </Card>
       </div>
 
-      <Tabs defaultValue="orders">
-        <TabsList>
+      <Tabs defaultValue="analytics">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="analytics"><BarChart3 className="mr-1 h-4 w-4" /> Analytics</TabsTrigger>
           <TabsTrigger value="orders">
             অর্ডার রিকোয়েস্ট
             {pendingRequests.length > 0 && <Badge variant="destructive" className="ml-2 text-xs">{pendingRequests.length}</Badge>}
@@ -511,6 +513,11 @@ export default function Admin() {
           <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> ইউজার ম্যানেজমেন্ট</TabsTrigger>
           <TabsTrigger value="settings"><Settings className="mr-1 h-4 w-4" /> Settings</TabsTrigger>
         </TabsList>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="mt-4">
+          <AnalyticsDashboard orders={purchaseRequests} pdfs={uploadedPdfs} />
+        </TabsContent>
 
         {/* Orders Tab */}
         <TabsContent value="orders" className="mt-4 space-y-4">
