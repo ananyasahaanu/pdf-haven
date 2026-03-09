@@ -53,6 +53,10 @@ export default function Admin() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [addingAdmin, setAddingAdmin] = useState(false);
+  const [addIsBestseller, setAddIsBestseller] = useState(false);
+  const [addIsFeatured, setAddIsFeatured] = useState(false);
+  const [addRating, setAddRating] = useState("0");
+  const [addReviewsCount, setAddReviewsCount] = useState("0");
 
   // Edit form state
   const [editTitle, setEditTitle] = useState("");
