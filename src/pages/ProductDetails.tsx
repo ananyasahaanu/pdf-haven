@@ -132,8 +132,10 @@ export default function ProductDetails() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {purchased ? (
-              <Button size="lg" className="flex-1 bg-success hover:bg-success/90 text-success-foreground">
-                <Download className="mr-2 h-5 w-5" /> Download PDF
+              <Button size="lg" className="flex-1 bg-success hover:bg-success/90 text-success-foreground" asChild>
+                <a href={product.pdfUrl} download target="_blank" rel="noopener noreferrer">
+                  <Download className="mr-2 h-5 w-5" /> Download PDF
+                </a>
               </Button>
             ) : (
               <Button size="lg" className="flex-1 gradient-bg text-primary-foreground border-0 premium-shadow" onClick={() => navigate(isAuthenticated ? `/payment/${product.id}` : "/login")}>
