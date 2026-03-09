@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Product } from "@/hooks/useProducts";
 import { useAuth } from "@/contexts/AuthContext";
 import { Eye, ShoppingCart, Star, Download, CheckCircle } from "lucide-react";
+import { WishlistButton } from "@/components/WishlistButton";
 
 interface ProductCardProps {
   product: Product;
@@ -40,11 +41,12 @@ export function ProductCard({ product }: ProductCardProps) {
             </Link>
           )}
         </div>
-        {purchased && (
-          <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 flex gap-1">
+          {purchased && (
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-success text-success-foreground"><CheckCircle className="h-4 w-4" /></div>
-          </div>
-        )}
+          )}
+          <WishlistButton productId={product.id} className="h-7 w-7 bg-background/80 backdrop-blur-sm rounded-full" />
+        </div>
       </div>
       <CardContent className="p-4">
         <div className="mb-1 flex items-center gap-1">

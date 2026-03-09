@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle, Phone, Send, Loader2, Copy, Globe } from "lucide-react";
+import { CouponInput } from "@/components/CouponInput";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,9 +26,12 @@ export default function Payment() {
   const [customerName, setCustomerName] = useState(user?.name || "");
   const [customerMobile, setCustomerMobile] = useState("");
   const [transactionId, setTransactionId] = useState("");
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
 
   const { data: product, isLoading } = useProduct(id || "");
   const PAYMENT_NUMBER = "01779379894";
+  const finalPrice = product ? Math.round(product.price * (1 - couponDiscount / 100)) : 0;
 
   if (!isAuthenticated) { navigate("/login"); return null; }
 
@@ -61,7 +65,7 @@ export default function Payment() {
         user_id: user.id,
         product_id: product.id,
         product_title: product.title,
-        product_price: product.price,
+        product_price: finalPrice,
         customer_name: customerName.trim(),
         customer_mobile: customerMobile.trim(),
         payment_method: method,
@@ -129,7 +133,7 @@ export default function Payment() {
             <Card className="border-primary/30 bg-primary/5">
               <CardHeader><CardTitle className="text-lg">২. Send Money করুন</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">আপনার <strong>{method === "bkash" ? "bKash" : "Nagad"}</strong> অ্যাপ থেকে নিচের নম্বরে <strong>৳{product.price}</strong> Send Money করুন:</p>
+                <p className="text-sm text-muted-foreground">আপনার <strong>{method === "bkash" ? "bKash" : "Nagad"}</strong> অ্যাপ থেকে নিচের নম্বরে <strong>৳{finalPrice}</strong> Send Money করুন:</p>
                 <div className="flex items-center gap-2 rounded-lg bg-background border border-border p-3">
                   <Phone className="h-5 w-5 text-primary" />
                   <span className="font-display text-xl font-bold text-primary tracking-wider">{PAYMENT_NUMBER}</span>
@@ -144,6 +148,17 @@ export default function Payment() {
                 <div className="space-y-2"><Label>আপনার নাম *</Label><Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="আপনার পুরো নাম" /></div>
                 <div className="space-y-2"><Label>মোবাইল নম্বর *</Label><Input value={customerMobile} onChange={(e) => setCustomerMobile(e.target.value)} placeholder="01XXXXXXXXX" /></div>
                 <div className="space-y-2"><Label>Transaction ID *</Label><Input value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="যেমন: TXN1234ABCD" /></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <Label className="text-sm font-medium mb-2 block">কুপন কোড</Label>
+                <CouponInput
+                  onApply={(d, c) => { setCouponDiscount(d); setCouponCode(c); }}
+                  onRemove={() => { setCouponDiscount(0); setCouponCode(null); }}
+                  appliedCode={couponCode}
+                  appliedDiscount={couponDiscount}
+                />
               </CardContent>
             </Card>
             <Button size="lg" className="w-full gradient-bg text-primary-foreground border-0 premium-shadow" onClick={handleSubmit} disabled={submitting}>
@@ -185,7 +200,10 @@ export default function Payment() {
                       <div className="flex justify-between"><span className="text-muted-foreground">ছাড়</span><span className="text-success">-৳{(product.originalPrice - product.price).toFixed(2)}</span></div>
                     </>
                   )}
-                  <div className="flex justify-between border-t border-border pt-2 font-bold"><span>মোট</span><span className="text-primary">৳{product.price}</span></div>
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">কুপন ({couponCode})</span><span className="text-success">-{couponDiscount}%</span></div>
+                  )}
+                  <div className="flex justify-between border-t border-border pt-2 font-bold"><span>মোট</span><span className="text-primary">৳{finalPrice}</span></div>
                 </div>
               </CardContent>
             </Card>

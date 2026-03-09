@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle, Download, Eye, Lock, ShoppingCart, Star, BookOpen } from "lucide-react";
+import { ReviewSection } from "@/components/ReviewSection";
+import { WishlistButton } from "@/components/WishlistButton";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -46,9 +48,12 @@ export default function ProductDetails() {
 
   return (
     <div className="container py-8">
-      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6">
-        <ArrowLeft className="mr-1 h-4 w-4" /> Back
-      </Button>
+      <div className="mb-6 flex items-center justify-between">
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back
+        </Button>
+        <WishlistButton productId={product.id} />
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="relative">
@@ -153,6 +158,8 @@ export default function ProductDetails() {
               </div>
             </div>
           </div>
+
+          <ReviewSection productId={product.id} />
         </div>
       </div>
     </div>
