@@ -210,17 +210,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Categories */}
-      <section className="container py-16">
-        <h2 className="mb-8 text-center font-display text-2xl font-bold md:text-3xl">{t("home.browseByCategory")}</h2>
-        <div className="flex flex-wrap justify-center gap-3">
-          {categories.filter(c => c !== "All").map((cat) => (
-            <Link key={cat} to={`/browse?category=${cat}`}>
-              <Button variant="outline" className="hover-lift">{cat}</Button>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="container pb-20">
