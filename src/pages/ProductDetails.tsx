@@ -58,6 +58,23 @@ export default function ProductDetails() {
         <WishlistButton productId={product.id} />
       </div>
 
+      <SEOHead
+        title={product.title}
+        description={product.description || `Buy "${product.title}" — premium PDF on PDFStore.`}
+        image={product.coverImage !== "/placeholder.svg" ? product.coverImage : undefined}
+        type="product"
+        price={product.price}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.title,
+          description: product.description,
+          image: product.coverImage,
+          offers: { "@type": "Offer", price: product.price, priceCurrency: "BDT", availability: "https://schema.org/InStock" },
+          aggregateRating: product.reviews > 0 ? { "@type": "AggregateRating", ratingValue: product.rating, reviewCount: product.reviews } : undefined,
+        }}
+      />
+
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="relative">
           <div className="aspect-[3/4] overflow-hidden rounded-2xl bg-secondary shadow-2xl">
@@ -122,6 +139,10 @@ export default function ProductDetails() {
               </Button>
             )}
           </div>
+
+          {purchased && (
+            <ReadingProgress productId={product.id} totalPages={product.pages} productTitle={product.title} />
+          )}
 
           {purchased && (
             <div className="mt-4 flex items-center gap-2 rounded-lg bg-success/10 p-3">
