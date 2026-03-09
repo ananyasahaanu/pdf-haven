@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -17,66 +18,82 @@ interface AuthContextType {
   logout: () => void;
   purchaseProduct: (productId: string) => void;
   hasPurchased: (productId: string) => boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo
-const mockUsers = [
-  { id: "1", name: "Demo User", email: "user@demo.com", password: "demo123", isAdmin: false },
-  { id: "2", name: "Admin User", email: "admin@demo.com", password: "admin123", isAdmin: true },
-];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem("pdfstore_user");
-    return saved ? JSON.parse(saved) : null;
-  });
-  
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [purchasedIds, setPurchasedIds] = useState<string[]>(() => {
     const saved = localStorage.getItem("pdfstore_purchased");
     return saved ? JSON.parse(saved) : [];
   });
 
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API call
-    
-    const foundUser = mockUsers.find(
-      (u) => u.email === email && u.password === password
-    );
-    
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem("pdfstore_user", JSON.stringify(userWithoutPassword));
-      return true;
+  const mapSupabaseUser = async (supabaseUser: SupabaseUser | null) => {
+    if (!supabaseUser) {
+      setUser(null);
+      setIsAdmin(false);
+      return;
     }
-    return false;
+
+    // Get profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("name, email")
+      .eq("id", supabaseUser.id)
+      .single();
+
+    setUser({
+      id: supabaseUser.id,
+      name: profile?.name || supabaseUser.user_metadata?.name || "",
+      email: profile?.email || supabaseUser.email || "",
+    });
+
+    // Check admin role
+    const { data: roleCheck } = await supabase.rpc("has_role", {
+      _user_id: supabaseUser.id,
+      _role: "admin",
+    });
+    setIsAdmin(!!roleCheck);
+  };
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        await mapSupabaseUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      await mapSupabaseUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return !error;
   }, []);
 
   const signup = useCallback(async (name: string, email: string, password: string): Promise<boolean> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    // Check if user already exists
-    if (mockUsers.some((u) => u.email === email)) {
-      return false;
-    }
-    
-    const newUser = {
-      id: Date.now().toString(),
-      name,
+    const { error } = await supabase.auth.signUp({
       email,
-      isAdmin: false,
-    };
-    
-    setUser(newUser);
-    localStorage.setItem("pdfstore_user", JSON.stringify(newUser));
-    return true;
+      password,
+      options: { data: { name } },
+    });
+    return !error;
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("pdfstore_user");
+    setIsAdmin(false);
   }, []);
 
   const purchaseProduct = useCallback((productId: string) => {
@@ -98,13 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated: !!user,
-        isAdmin: user?.isAdmin ?? false,
+        isAdmin,
         purchasedIds,
         login,
         signup,
         logout,
         purchaseProduct,
         hasPurchased,
+        loading,
       }}
     >
       {children}
