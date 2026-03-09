@@ -128,6 +128,10 @@ export default function ProductDetails() {
             </div>
           )}
 
+          <div className="mt-6">
+            <ShareButtons title={product.title} productId={product.id} />
+          </div>
+
           <div className="mt-10">
             <h2 className="font-display text-xl font-bold mb-4"><Eye className="mr-2 inline h-5 w-5" /> Preview</h2>
             <div className="space-y-3">
