@@ -14,7 +14,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { BarChart3, BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Tag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
+import { BarChart3, BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Tag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image, Sparkles, Star } from "lucide-react";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { CouponManagement } from "@/components/CouponManagement";
 import { BannerManagement } from "@/components/BannerManagement";
@@ -53,6 +53,10 @@ export default function Admin() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [addingAdmin, setAddingAdmin] = useState(false);
+  const [addIsBestseller, setAddIsBestseller] = useState(false);
+  const [addIsFeatured, setAddIsFeatured] = useState(false);
+  const [addRating, setAddRating] = useState("0");
+  const [addReviewsCount, setAddReviewsCount] = useState("0");
 
   // Edit form state
   const [editTitle, setEditTitle] = useState("");
@@ -64,6 +68,8 @@ export default function Admin() {
   const [editIsBestseller, setEditIsBestseller] = useState(false);
   const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const [editRating, setEditRating] = useState("0");
+  const [editReviewsCount, setEditReviewsCount] = useState("0");
   const editCoverInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
 
@@ -281,7 +287,7 @@ export default function Admin() {
 
   const resetForm = () => {
     setTitle(""); setDescription(""); setPrice(""); setOriginalPrice(""); setCategory(""); setPages("");
-    setPdfFile(null); setCoverFile(null);
+    setPdfFile(null); setCoverFile(null); setAddIsBestseller(false); setAddIsFeatured(false); setAddRating("0"); setAddReviewsCount("0");
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -318,6 +324,10 @@ export default function Admin() {
         cover_url: coverUrl,
         user_id: user.id,
         is_published: true,
+        is_bestseller: addIsBestseller,
+        is_featured: addIsFeatured,
+        rating: parseFloat(addRating) || 0,
+        reviews_count: parseInt(addReviewsCount) || 0,
       });
       if (insertError) throw insertError;
 
@@ -343,6 +353,8 @@ export default function Admin() {
     setEditPages(pdf.pages ? String(pdf.pages) : "");
     setEditIsBestseller(pdf.is_bestseller);
     setEditIsFeatured(pdf.is_featured);
+    setEditRating(String(pdf.rating));
+    setEditReviewsCount(String(pdf.reviews_count));
     setEditCoverFile(null);
     setEditDialogOpen(true);
   };
@@ -371,6 +383,8 @@ export default function Admin() {
         pages: parseInt(editPages) || null,
         is_bestseller: editIsBestseller,
         is_featured: editIsFeatured,
+        rating: parseFloat(editRating) || 0,
+        reviews_count: parseInt(editReviewsCount) || 0,
         cover_url: coverUrl,
       }).eq("id", editingPdf.id);
       if (error) throw error;
@@ -439,6 +453,35 @@ export default function Admin() {
                     <Input type="number" value={pages} onChange={(e) => setPages(e.target.value)} placeholder="100" />
                   </div>
                 </div>
+
+                {/* Homepage Placement */}
+                <div className="rounded-lg border border-border p-4 space-y-4 bg-secondary/30">
+                  <Label className="text-sm font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Homepage Placement</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="add-bestseller" className="text-sm cursor-pointer">🔥 Show in Bestsellers</Label>
+                    <Switch id="add-bestseller" checked={addIsBestseller} onCheckedChange={setAddIsBestseller} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="add-featured" className="text-sm cursor-pointer">⭐ Show in Featured</Label>
+                    <Switch id="add-featured" checked={addIsFeatured} onCheckedChange={setAddIsFeatured} />
+                  </div>
+                </div>
+
+                {/* Fake Rating */}
+                <div className="rounded-lg border border-border p-4 space-y-4 bg-secondary/30">
+                  <Label className="text-sm font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-amber-400" /> Display Rating</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Star Rating (0-5)</Label>
+                      <Input type="number" min="0" max="5" step="0.1" value={addRating} onChange={(e) => setAddRating(e.target.value)} placeholder="4.5" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Reviews Count</Label>
+                      <Input type="number" min="0" value={addReviewsCount} onChange={(e) => setAddReviewsCount(e.target.value)} placeholder="120" />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Cover Image</Label>
                   <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} />
@@ -848,6 +891,22 @@ export default function Admin() {
                 </div>
                 <Switch checked={editIsFeatured} onCheckedChange={setEditIsFeatured} />
               </div>
+
+              {/* Fake Rating in Edit */}
+              <div className="rounded-lg border border-border p-4 space-y-4 bg-secondary/30">
+                <Label className="text-sm font-semibold flex items-center gap-2"><Star className="h-4 w-4 fill-amber-400 text-amber-400" /> Display Rating</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Star Rating (0-5)</Label>
+                    <Input type="number" min="0" max="5" step="0.1" value={editRating} onChange={(e) => setEditRating(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Reviews Count</Label>
+                    <Input type="number" min="0" value={editReviewsCount} onChange={(e) => setEditReviewsCount(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label>Change Cover Image</Label>
                 <input ref={editCoverInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setEditCoverFile(e.target.files?.[0] || null)} />
