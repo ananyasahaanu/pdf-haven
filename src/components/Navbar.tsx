@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, Languages, Library, LogIn, LogOut, Menu, Moon, Search, Shield, Sun, User, X } from "lucide-react";
+import { BookOpen, LayoutDashboard, Languages, Library, LogIn, LogOut, Menu, Moon, Search, Shield, Sun, User, X } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -52,12 +52,20 @@ export function Navbar() {
             <Button variant="ghost" size="sm">{t("nav.browse")}</Button>
           </Link>
           {isAuthenticated && (
-            <Link to="/library">
-              <Button variant="ghost" size="sm">
-                <Library className="mr-1 h-4 w-4" />
-                {t("nav.library")}
-              </Button>
-            </Link>
+            <>
+              <Link to="/library">
+                <Button variant="ghost" size="sm">
+                  <Library className="mr-1 h-4 w-4" />
+                  {t("nav.library")}
+                </Button>
+              </Link>
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm">
+                  <LayoutDashboard className="mr-1 h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+            </>
           )}
           {isAdmin && (
             <Link to="/admin">
@@ -122,6 +130,9 @@ export function Navbar() {
                 <DropdownMenuItem onClick={() => navigate("/library")}>
                   <Library className="mr-2 h-4 w-4" /> {t("nav.library")}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                  <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => navigate("/admin")}>
                     <Shield className="mr-2 h-4 w-4" /> {t("nav.adminPanel")}
@@ -165,11 +176,18 @@ export function Navbar() {
               <Button variant="ghost" className="w-full justify-start">{t("nav.browse")}</Button>
             </Link>
             {isAuthenticated && (
-              <Link to="/library" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Library className="mr-2 h-4 w-4" /> {t("nav.library")}
-                </Button>
-              </Link>
+              <>
+                <Link to="/library" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <Library className="mr-2 h-4 w-4" /> {t("nav.library")}
+                  </Button>
+                </Link>
+                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                  </Button>
+                </Link>
+              </>
             )}
             {isAdmin && (
               <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
