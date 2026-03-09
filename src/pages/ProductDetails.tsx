@@ -18,6 +18,7 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   const { isAuthenticated, hasPurchased } = useAuth();
   const { data: product, isLoading, error } = useProduct(id || "");
+  const [previewLoading, setPreviewLoading] = useState(true);
 
   if (isLoading) {
     return (
