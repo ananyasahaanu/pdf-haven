@@ -21,12 +21,14 @@ export default function ProductDetails() {
   const { isAuthenticated, hasPurchased } = useAuth();
   const { data: product, isLoading, error } = useProduct(id || "");
 
-  // Build the preview URL using the edge function
+  // Build the preview URL - use edge function for authenticated users (server-side page restriction)
+  // For non-authenticated users, use the direct public URL
   const previewUrl = useMemo(() => {
     if (!id) return "";
+    if (!isAuthenticated) return product?.pdfUrl || "";
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "puwzvzrlzhczwcyqufuo";
     return `https://${projectId}.supabase.co/functions/v1/preview-pdf?product_id=${id}`;
-  }, [id]);
+  }, [id, isAuthenticated, product?.pdfUrl]);
 
   if (isLoading) {
     return (
