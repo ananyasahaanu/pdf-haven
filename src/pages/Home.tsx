@@ -145,16 +145,22 @@ export default function Home() {
 
       {/* Featured */}
       {(isLoading || featured.length > 0) && (
-        <section className="bg-secondary/30 py-16">
+        <section className="relative py-20 overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-b from-secondary/50 via-secondary/30 to-background" />
+            <div className="absolute top-0 left-1/3 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 h-64 w-64 rounded-full bg-premium-glow/5 blur-3xl" />
+          </div>
           <div className="container">
-            <div className="mb-8 flex items-center justify-between">
-              <div>
-                <h2 className="font-display text-2xl font-bold md:text-3xl">
-                  <Sparkles className="mr-2 inline h-6 w-6 text-primary" /> {t("home.featured")}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">{t("home.featuredSub")}</p>
-              </div>
-              <Link to="/browse"><Button variant="ghost" size="sm">{t("home.viewAll")} <ArrowRight className="ml-1 h-4 w-4" /></Button></Link>
+            <div className="mb-10 text-center">
+              <Badge variant="secondary" className="mb-4 px-4 py-1.5 text-sm">
+                <Sparkles className="mr-1 h-3 w-3" /> Hand-picked for you
+              </Badge>
+              <h2 className="font-display text-3xl font-bold md:text-4xl">
+                {t("home.featured")}
+              </h2>
+              <p className="mx-auto mt-3 max-w-lg text-muted-foreground">{t("home.featuredSub")}</p>
             </div>
             {isLoading ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -167,6 +173,13 @@ export default function Home() {
                 ))}
               </AnimatedGrid>
             )}
+            <div className="mt-10 text-center">
+              <Link to="/browse">
+                <Button variant="outline" size="lg" className="hover-lift">
+                  {t("home.viewAll")} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
       )}
