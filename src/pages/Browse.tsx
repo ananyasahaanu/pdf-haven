@@ -52,6 +52,7 @@ export default function Browse() {
 
   return (
     <div className="container py-8">
+      <SEOHead title="Browse PDFs" description="Discover our complete collection of premium educational PDFs. Filter by category, sort by price or rating." />
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold">Browse PDFs</h1>
         <p className="mt-1 text-muted-foreground">Discover our complete collection</p>
