@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,23 +14,31 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus } from "lucide-react";
+import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Tables as DbTables } from "@/integrations/supabase/types";
+import { Switch } from "@/components/ui/switch";
 
 export default function Admin() {
   const { isAdmin, isAuthenticated, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingPdf, setEditingPdf] = useState<DbTables<"uploaded_pdfs"> | null>(null);
 
-  // Form state
+  // Search states
+  const [pdfSearch, setPdfSearch] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
+
+  // Form state (add)
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
   const [category, setCategory] = useState("");
   const [pages, setPages] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -40,6 +48,19 @@ export default function Admin() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [addingAdmin, setAddingAdmin] = useState(false);
+
+  // Edit form state
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editOriginalPrice, setEditOriginalPrice] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editPages, setEditPages] = useState("");
+  const [editIsBestseller, setEditIsBestseller] = useState(false);
+  const [editIsFeatured, setEditIsFeatured] = useState(false);
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const editCoverInputRef = useRef<HTMLInputElement>(null);
+  const [saving, setSaving] = useState(false);
 
   // Fetch uploaded PDFs
   const { data: uploadedPdfs = [] } = useQuery({
@@ -68,6 +89,28 @@ export default function Admin() {
     },
     enabled: isAuthenticated && isAdmin,
   });
+
+  // Filtered lists
+  const filteredPdfs = useMemo(() => {
+    if (!pdfSearch.trim()) return uploadedPdfs;
+    const q = pdfSearch.toLowerCase();
+    return uploadedPdfs.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q) ||
+      (p.description || "").toLowerCase().includes(q)
+    );
+  }, [uploadedPdfs, pdfSearch]);
+
+  const filteredOrders = useMemo(() => {
+    if (!orderSearch.trim()) return purchaseRequests;
+    const q = orderSearch.toLowerCase();
+    return purchaseRequests.filter(r =>
+      r.customer_name.toLowerCase().includes(q) ||
+      r.customer_mobile.includes(q) ||
+      r.product_title.toLowerCase().includes(q) ||
+      r.transaction_id.toLowerCase().includes(q)
+    );
+  }, [purchaseRequests, orderSearch]);
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -131,31 +174,21 @@ export default function Admin() {
         .select("id, user_id, role")
         .eq("role", "admin");
       if (error) throw error;
-      // Get profiles for each admin
-      const userIds = data.map((r) => r.user_id);
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, name, email");
-      // Filter profiles that match admin user_ids - we need to handle RLS
-      // Admins can only see their own profile, so we'll use what we have
       return data.map((role) => {
         const profile = profiles?.find((p) => p.id === role.user_id);
-        return {
-          ...role,
-          name: profile?.name || "Unknown",
-          email: profile?.email || "Unknown",
-        };
+        return { ...role, name: profile?.name || "Unknown", email: profile?.email || "Unknown" };
       });
     },
     enabled: isAuthenticated && isAdmin,
   });
 
-  // Add admin by email
   const handleAddAdmin = async () => {
     if (!newAdminEmail.trim()) return;
     setAddingAdmin(true);
     try {
-      // Find user by email in profiles
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id, email")
@@ -170,10 +203,8 @@ export default function Admin() {
         .insert({ user_id: profile.id, role: "admin" });
       if (insertError) {
         if (insertError.code === "23505") {
-          toast({ title: "ইতিমধ্যে অ্যাডমিন", description: "এই ইউজার আগে থেকেই অ্যাডমিন।", variant: "destructive" });
-        } else {
-          throw insertError;
-        }
+          toast({ title: "ইতিমধ্যে অ্যাডমিন", variant: "destructive" });
+        } else throw insertError;
         return;
       }
       toast({ title: "অ্যাডমিন যোগ হয়েছে!", description: `${newAdminEmail} কে অ্যাডমিন করা হয়েছে।` });
@@ -186,19 +217,15 @@ export default function Admin() {
     }
   };
 
-  // Remove admin
   const handleRemoveAdmin = async (roleId: string, email: string) => {
     if (email === user?.email) {
       toast({ title: "নিজেকে রিমুভ করা যাবে না", variant: "destructive" });
       return;
     }
     try {
-      const { error } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("id", roleId);
+      const { error } = await supabase.from("user_roles").delete().eq("id", roleId);
       if (error) throw error;
-      toast({ title: "অ্যাডমিন রিমুভ হয়েছে", description: `${email} আর অ্যাডমিন নয়।` });
+      toast({ title: "অ্যাডমিন রিমুভ হয়েছে" });
       refetchAdmins();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -206,7 +233,7 @@ export default function Admin() {
   };
 
   const resetForm = () => {
-    setTitle(""); setDescription(""); setPrice(""); setCategory(""); setPages("");
+    setTitle(""); setDescription(""); setPrice(""); setOriginalPrice(""); setCategory(""); setPages("");
     setPdfFile(null); setCoverFile(null);
   };
 
@@ -216,7 +243,6 @@ export default function Admin() {
       toast({ title: "PDF file required", variant: "destructive" });
       return;
     }
-
     setUploading(true);
     try {
       const timestamp = Date.now();
@@ -238,6 +264,7 @@ export default function Admin() {
         title,
         description: description || null,
         price: parseFloat(price) || 0,
+        original_price: originalPrice ? parseFloat(originalPrice) : null,
         category: category || "Other",
         pages: parseInt(pages) || null,
         pdf_url: pdfUrlData.publicUrl,
@@ -255,6 +282,60 @@ export default function Admin() {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
       setUploading(false);
+    }
+  };
+
+  // Open edit dialog
+  const openEditDialog = (pdf: DbTables<"uploaded_pdfs">) => {
+    setEditingPdf(pdf);
+    setEditTitle(pdf.title);
+    setEditDescription(pdf.description || "");
+    setEditPrice(String(pdf.price));
+    setEditOriginalPrice(pdf.original_price ? String(pdf.original_price) : "");
+    setEditCategory(pdf.category);
+    setEditPages(pdf.pages ? String(pdf.pages) : "");
+    setEditIsBestseller(pdf.is_bestseller);
+    setEditIsFeatured(pdf.is_featured);
+    setEditCoverFile(null);
+    setEditDialogOpen(true);
+  };
+
+  // Save edit
+  const handleSaveEdit = async () => {
+    if (!editingPdf || !user) return;
+    setSaving(true);
+    try {
+      let coverUrl = editingPdf.cover_url;
+      if (editCoverFile) {
+        const timestamp = Date.now();
+        const coverPath = `${user.id}/${timestamp}_${editCoverFile.name}`;
+        const { error: coverError } = await supabase.storage.from("covers").upload(coverPath, editCoverFile);
+        if (coverError) throw coverError;
+        const { data: coverUrlData } = supabase.storage.from("covers").getPublicUrl(coverPath);
+        coverUrl = coverUrlData.publicUrl;
+      }
+
+      const { error } = await supabase.from("uploaded_pdfs").update({
+        title: editTitle,
+        description: editDescription || null,
+        price: parseFloat(editPrice) || 0,
+        original_price: editOriginalPrice ? parseFloat(editOriginalPrice) : null,
+        category: editCategory || "Other",
+        pages: parseInt(editPages) || null,
+        is_bestseller: editIsBestseller,
+        is_featured: editIsFeatured,
+        cover_url: coverUrl,
+      }).eq("id", editingPdf.id);
+      if (error) throw error;
+
+      toast({ title: "Updated!", description: "PDF details have been saved." });
+      queryClient.invalidateQueries({ queryKey: ["admin-pdfs"] });
+      setEditDialogOpen(false);
+      setEditingPdf(null);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -282,49 +363,55 @@ export default function Admin() {
               <DialogTitle className="font-display">Upload New PDF</DialogTitle>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh] pr-4">
-            <form onSubmit={handleAddProduct} className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Title *</Label>
-                <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="PDF Title" required />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the PDF..." rows={3} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleAddProduct} className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label>Price (৳) *</Label>
-                  <Input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="29.99" required />
+                  <Label>Title *</Label>
+                  <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="PDF Title" required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Programming" />
+                  <Label>Description</Label>
+                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the PDF..." rows={3} />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Pages</Label>
-                <Input type="number" value={pages} onChange={(e) => setPages(e.target.value)} placeholder="100" />
-              </div>
-              <div className="space-y-2">
-                <Label>Cover Image</Label>
-                <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} />
-                <div onClick={() => coverInputRef.current?.click()} className="flex items-center gap-2 rounded-lg border border-dashed border-border p-4 cursor-pointer hover:bg-accent/50 transition-colors">
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{coverFile ? coverFile.name : "Click to upload cover image"}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Price (৳) *</Label>
+                    <Input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="29.99" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Original Price (৳)</Label>
+                    <Input type="number" step="0.01" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} placeholder="49.99" />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>PDF File *</Label>
-                <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => setPdfFile(e.target.files?.[0] || null)} />
-                <div onClick={() => pdfInputRef.current?.click()} className="flex items-center gap-2 rounded-lg border border-dashed border-border p-4 cursor-pointer hover:bg-accent/50 transition-colors">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{pdfFile ? pdfFile.name : "Click to upload PDF file"}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Programming" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Pages</Label>
+                    <Input type="number" value={pages} onChange={(e) => setPages(e.target.value)} placeholder="100" />
+                  </div>
                 </div>
-              </div>
-              <Button type="submit" className="w-full gradient-bg text-primary-foreground border-0" disabled={uploading}>
-                {uploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Add Product"}
-              </Button>
-            </form>
+                <div className="space-y-2">
+                  <Label>Cover Image</Label>
+                  <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} />
+                  <div onClick={() => coverInputRef.current?.click()} className="flex items-center gap-2 rounded-lg border border-dashed border-border p-4 cursor-pointer hover:bg-accent/50 transition-colors">
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{coverFile ? coverFile.name : "Click to upload cover image"}</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>PDF File *</Label>
+                  <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => setPdfFile(e.target.files?.[0] || null)} />
+                  <div onClick={() => pdfInputRef.current?.click()} className="flex items-center gap-2 rounded-lg border border-dashed border-border p-4 cursor-pointer hover:bg-accent/50 transition-colors">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{pdfFile ? pdfFile.name : "Click to upload PDF file"}</span>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full gradient-bg text-primary-foreground border-0" disabled={uploading}>
+                  {uploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Add Product"}
+                </Button>
+              </form>
             </ScrollArea>
           </DialogContent>
         </Dialog>
@@ -334,9 +421,7 @@ export default function Admin() {
       <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-              <Package className="h-6 w-6 text-accent-foreground" />
-            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent"><Package className="h-6 w-6 text-accent-foreground" /></div>
             <div>
               <div className="text-2xl font-bold font-display">{uploadedPdfs.length}</div>
               <div className="text-sm text-muted-foreground">Total Products</div>
@@ -345,9 +430,7 @@ export default function Admin() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-              <ShoppingBag className="h-6 w-6 text-accent-foreground" />
-            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent"><ShoppingBag className="h-6 w-6 text-accent-foreground" /></div>
             <div>
               <div className="text-2xl font-bold font-display">{uploadedPdfs.filter(p => p.is_published).length}</div>
               <div className="text-sm text-muted-foreground">Published</div>
@@ -356,9 +439,7 @@ export default function Admin() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-              <Clock className="h-6 w-6 text-accent-foreground" />
-            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent"><Clock className="h-6 w-6 text-accent-foreground" /></div>
             <div>
               <div className="text-2xl font-bold font-display">{pendingRequests.length}</div>
               <div className="text-sm text-muted-foreground">Pending Orders</div>
@@ -367,9 +448,7 @@ export default function Admin() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-              <BookOpen className="h-6 w-6 text-accent-foreground" />
-            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent"><BookOpen className="h-6 w-6 text-accent-foreground" /></div>
             <div>
               <div className="text-2xl font-bold font-display">
                 ৳{purchaseRequests.filter(r => r.status === "approved").reduce((acc, o) => acc + Number(o.product_price), 0).toFixed(0)}
@@ -384,18 +463,18 @@ export default function Admin() {
         <TabsList>
           <TabsTrigger value="orders">
             অর্ডার রিকোয়েস্ট
-            {pendingRequests.length > 0 && (
-              <Badge variant="destructive" className="ml-2 text-xs">{pendingRequests.length}</Badge>
-            )}
+            {pendingRequests.length > 0 && <Badge variant="destructive" className="ml-2 text-xs">{pendingRequests.length}</Badge>}
           </TabsTrigger>
           <TabsTrigger value="products">Uploaded PDFs</TabsTrigger>
-          <TabsTrigger value="users">
-            <Users className="mr-1 h-4 w-4" /> ইউজার ম্যানেজমেন্ট
-          </TabsTrigger>
+          <TabsTrigger value="users"><Users className="mr-1 h-4 w-4" /> ইউজার ম্যানেজমেন্ট</TabsTrigger>
         </TabsList>
 
         {/* Orders Tab */}
-        <TabsContent value="orders" className="mt-4">
+        <TabsContent value="orders" className="mt-4 space-y-4">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} placeholder="Search orders..." className="pl-10" />
+          </div>
           <Card>
             <Table>
               <TableHeader>
@@ -409,14 +488,14 @@ export default function Admin() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {purchaseRequests.length === 0 ? (
+                {filteredOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      কোনো অর্ডার রিকোয়েস্ট নেই।
+                      {orderSearch ? "কোনো ম্যাচ পাওয়া যায়নি।" : "কোনো অর্ডার রিকোয়েস্ট নেই।"}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  purchaseRequests.map((req) => (
+                  filteredOrders.map((req) => (
                     <TableRow key={req.id}>
                       <TableCell>
                         <div>
@@ -439,30 +518,17 @@ export default function Admin() {
                         <code className="text-xs bg-muted px-2 py-1 rounded">{req.transaction_id}</code>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={req.status === "approved" ? "default" : req.status === "rejected" ? "destructive" : "outline"}
-                          className="text-xs"
-                        >
+                        <Badge variant={req.status === "approved" ? "default" : req.status === "rejected" ? "destructive" : "outline"} className="text-xs">
                           {req.status === "pending" ? "⏳ পেন্ডিং" : req.status === "approved" ? "✅ অনুমোদিত" : "❌ প্রত্যাখ্যাত"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         {req.status === "pending" && (
                           <div className="flex gap-1 justify-end">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-success hover:text-success"
-                              onClick={() => updateRequestMutation.mutate({ id: req.id, status: "approved" })}
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:text-success" onClick={() => updateRequestMutation.mutate({ id: req.id, status: "approved" })}>
                               <CheckCircle className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              onClick={() => updateRequestMutation.mutate({ id: req.id, status: "rejected" })}
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => updateRequestMutation.mutate({ id: req.id, status: "rejected" })}>
                               <XCircle className="h-4 w-4" />
                             </Button>
                           </div>
@@ -477,7 +543,11 @@ export default function Admin() {
         </TabsContent>
 
         {/* Products Tab */}
-        <TabsContent value="products" className="mt-4">
+        <TabsContent value="products" className="mt-4 space-y-4">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={pdfSearch} onChange={(e) => setPdfSearch(e.target.value)} placeholder="Search PDFs..." className="pl-10" />
+          </div>
           <Card>
             <Table>
               <TableHeader>
@@ -485,19 +555,20 @@ export default function Admin() {
                   <TableHead>Product</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
+                  <TableHead>Flags</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {uploadedPdfs.length === 0 ? (
+                {filteredPdfs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No PDFs uploaded yet. Click "Add Product" to upload your first PDF.
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      {pdfSearch ? "No PDFs match your search." : "No PDFs uploaded yet. Click \"Add Product\" to upload your first PDF."}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  uploadedPdfs.map((pdf) => (
+                  filteredPdfs.map((pdf) => (
                     <TableRow key={pdf.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -515,7 +586,18 @@ export default function Admin() {
                         </div>
                       </TableCell>
                       <TableCell><Badge variant="secondary">{pdf.category}</Badge></TableCell>
-                      <TableCell className="font-medium">৳{Number(pdf.price).toFixed(2)}</TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">৳{Number(pdf.price).toFixed(0)}</div>
+                          {pdf.original_price && <div className="text-xs text-muted-foreground line-through">৳{Number(pdf.original_price).toFixed(0)}</div>}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {pdf.is_bestseller && <Badge variant="secondary" className="text-xs">🔥 Best</Badge>}
+                          {pdf.is_featured && <Badge variant="secondary" className="text-xs">⭐ Featured</Badge>}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant={pdf.is_published ? "default" : "outline"}
@@ -526,9 +608,14 @@ export default function Admin() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteMutation.mutate(pdf)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1 justify-end">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(pdf)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteMutation.mutate(pdf)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -569,25 +656,17 @@ export default function Admin() {
                 <TableBody>
                   {adminUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                        কোনো অ্যাডমিন নেই।
-                      </TableCell>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">কোনো অ্যাডমিন নেই।</TableCell>
                     </TableRow>
                   ) : (
                     adminUsers.map((admin) => (
                       <TableRow key={admin.id}>
                         <TableCell className="font-medium">{admin.name}</TableCell>
                         <TableCell className="text-muted-foreground">{admin.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="default" className="text-xs">
-                            <Shield className="h-3 w-3 mr-1" /> Admin
-                          </Badge>
-                        </TableCell>
+                        <TableCell><Badge variant="default" className="text-xs"><Shield className="h-3 w-3 mr-1" /> Admin</Badge></TableCell>
                         <TableCell className="text-right">
                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
+                            variant="ghost" size="icon" className="h-8 w-8 text-destructive"
                             onClick={() => handleRemoveAdmin(admin.id, admin.email)}
                             disabled={admin.email === user?.email}
                             title={admin.email === user?.email ? "নিজেকে রিমুভ করা যাবে না" : "অ্যাডমিন রিমুভ করুন"}
@@ -604,6 +683,77 @@ export default function Admin() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) setEditingPdf(null); }}>
+        <DialogContent className="max-w-lg max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit PDF</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[70vh] pr-4">
+            <div className="space-y-4 mt-4">
+              {editingPdf?.cover_url && (
+                <div className="flex justify-center">
+                  <img src={editCoverFile ? URL.createObjectURL(editCoverFile) : editingPdf.cover_url} alt="Cover" className="h-32 w-24 rounded-lg object-cover shadow-md" />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Price (৳)</Label>
+                  <Input type="number" step="0.01" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Original Price (৳)</Label>
+                  <Input type="number" step="0.01" value={editOriginalPrice} onChange={(e) => setEditOriginalPrice(e.target.value)} placeholder="Leave empty for no discount" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Pages</Label>
+                  <Input type="number" value={editPages} onChange={(e) => setEditPages(e.target.value)} />
+                </div>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                <div>
+                  <Label className="text-sm font-medium">Bestseller</Label>
+                  <p className="text-xs text-muted-foreground">Show bestseller badge</p>
+                </div>
+                <Switch checked={editIsBestseller} onCheckedChange={setEditIsBestseller} />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                <div>
+                  <Label className="text-sm font-medium">Featured</Label>
+                  <p className="text-xs text-muted-foreground">Show in featured section</p>
+                </div>
+                <Switch checked={editIsFeatured} onCheckedChange={setEditIsFeatured} />
+              </div>
+              <div className="space-y-2">
+                <Label>Change Cover Image</Label>
+                <input ref={editCoverInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setEditCoverFile(e.target.files?.[0] || null)} />
+                <div onClick={() => editCoverInputRef.current?.click()} className="flex items-center gap-2 rounded-lg border border-dashed border-border p-4 cursor-pointer hover:bg-accent/50 transition-colors">
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">{editCoverFile ? editCoverFile.name : "Click to upload new cover"}</span>
+                </div>
+              </div>
+              <Button className="w-full gradient-bg text-primary-foreground border-0" onClick={handleSaveEdit} disabled={saving}>
+                {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Changes</>}
+              </Button>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
