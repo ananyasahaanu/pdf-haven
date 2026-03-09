@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 // Configure pdf.js worker via CDN
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+const PREVIEW_PAGE_LIMIT = 3;
 
 interface PdfViewerProps {
   pdfUrl: string;
