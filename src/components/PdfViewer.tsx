@@ -294,8 +294,8 @@ export function PdfViewer({
         </div>
       </div>
 
-      {/* Restricted notice */}
-      {isRestricted && currentPage === numPages && (
+      {/* Restricted notice - show when on last allowed page */}
+      {isRestricted && currentPage === maxAllowedPage && (
         <div className="mt-4 rounded-xl border border-border bg-card p-6 text-center space-y-3">
           <div className="flex justify-center">
             <div className="rounded-full bg-muted p-3">
@@ -307,7 +307,7 @@ export function PdfViewer({
               Preview ends here
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              You're viewing {numPages} of {displayTotalPages} pages. Purchase
+              You're viewing {maxAllowedPage} of {displayTotalPages} pages. Purchase
               to unlock the full PDF.
             </p>
           </div>
