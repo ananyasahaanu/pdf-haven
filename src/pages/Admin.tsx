@@ -453,6 +453,35 @@ export default function Admin() {
                     <Input type="number" value={pages} onChange={(e) => setPages(e.target.value)} placeholder="100" />
                   </div>
                 </div>
+
+                {/* Homepage Placement */}
+                <div className="rounded-lg border border-border p-4 space-y-4 bg-secondary/30">
+                  <Label className="text-sm font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Homepage Placement</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="add-bestseller" className="text-sm cursor-pointer">🔥 Show in Bestsellers</Label>
+                    <Switch id="add-bestseller" checked={addIsBestseller} onCheckedChange={setAddIsBestseller} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="add-featured" className="text-sm cursor-pointer">⭐ Show in Featured</Label>
+                    <Switch id="add-featured" checked={addIsFeatured} onCheckedChange={setAddIsFeatured} />
+                  </div>
+                </div>
+
+                {/* Fake Rating */}
+                <div className="rounded-lg border border-border p-4 space-y-4 bg-secondary/30">
+                  <Label className="text-sm font-semibold flex items-center gap-2"><Star className="h-4 w-4 text-amber-400" /> Display Rating</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Star Rating (0-5)</Label>
+                      <Input type="number" min="0" max="5" step="0.1" value={addRating} onChange={(e) => setAddRating(e.target.value)} placeholder="4.5" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Reviews Count</Label>
+                      <Input type="number" min="0" value={addReviewsCount} onChange={(e) => setAddReviewsCount(e.target.value)} placeholder="120" />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Cover Image</Label>
                   <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} />
