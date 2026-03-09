@@ -81,6 +81,7 @@ const App = () => (
               </div>
             </BrowserRouter>
           </TooltipProvider>
+          </SiteSettingsProvider>
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
