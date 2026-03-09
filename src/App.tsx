@@ -19,6 +19,14 @@ import Library from "./pages/Library";
 import Admin from "./pages/Admin";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import HelpCenter from "./pages/HelpCenter";
+import ContactUs from "./pages/ContactUs";
+import RefundPolicy from "./pages/RefundPolicy";
+import FAQ from "./pages/FAQ";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import AboutCEO from "./pages/AboutCEO";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +55,14 @@ const App = () => (
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/help" element={<HelpCenter />} />
+                    <Route path="/contact" element={<ContactUs />} />
+                    <Route path="/refund-policy" element={<RefundPolicy />} />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/cookies" element={<CookiePolicy />} />
+                    <Route path="/about" element={<AboutCEO />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </PageTransition>
