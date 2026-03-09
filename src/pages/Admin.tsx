@@ -68,6 +68,8 @@ export default function Admin() {
   const [editIsBestseller, setEditIsBestseller] = useState(false);
   const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const [editRating, setEditRating] = useState("0");
+  const [editReviewsCount, setEditReviewsCount] = useState("0");
   const editCoverInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
 
