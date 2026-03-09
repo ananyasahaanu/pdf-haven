@@ -14,7 +14,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save } from "lucide-react";
+import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, Search, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus, Save, Settings, Image } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
