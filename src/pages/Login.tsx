@@ -22,12 +22,12 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const success = await login(email, password);
-    if (success) {
+    const result = await login(email, password);
+    if (result.success) {
       toast({ title: "Welcome back!", description: "You've been logged in successfully." });
       navigate("/");
     } else {
-      toast({ title: "Login failed", description: "Invalid email or password.", variant: "destructive" });
+      toast({ title: "Login failed", description: result.error || "Invalid email or password.", variant: "destructive" });
     }
     setLoading(false);
   };
