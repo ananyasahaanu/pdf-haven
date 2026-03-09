@@ -103,7 +103,7 @@ export function AnalyticsDashboard({ orders, pdfs }: { orders: Order[]; pdfs: Pd
   const filteredOrders = useMemo(() =>
     orders.filter(o => {
       const d = parseISO(o.created_at);
-      return isWithinInterval(d, dateRange);
+      return isWithinInterval(d, { start: dateRange.from, end: dateRange.to });
     }),
   [orders, dateRange]);
 
@@ -112,10 +112,10 @@ export function AnalyticsDashboard({ orders, pdfs }: { orders: Order[]; pdfs: Pd
 
   // Revenue over selected range
   const revenueData = useMemo(() => {
-    const days = eachDayOfInterval(dateRange);
+    const days = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
     // If range > 60 days, aggregate weekly
     if (days.length > 60) {
-      const weeks = eachWeekOfInterval(dateRange);
+      const weeks = eachWeekOfInterval({ start: dateRange.from, end: dateRange.to });
       return weeks.map((weekStart, i) => {
         const weekEnd = i < weeks.length - 1 ? weeks[i + 1] : dateRange.to;
         const weekOrders = approvedOrders.filter(o => {
