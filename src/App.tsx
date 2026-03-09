@@ -77,6 +77,7 @@ const App = () => (
                   </PageTransition>
                 </main>
                 <Footer />
+                <AnnouncementBanner />
               </div>
             </BrowserRouter>
           </TooltipProvider>
