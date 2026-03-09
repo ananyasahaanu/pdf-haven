@@ -136,12 +136,15 @@ export function PdfViewer({
     renderPage();
   }, [pdf, currentPage, scale]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Enforce page limit for non-purchasers
+  const maxAllowedPage = purchased ? numPages : Math.min(PREVIEW_PAGE_LIMIT, numPages);
+
   const goToPrev = () => {
     if (currentPage > 1) setCurrentPage((p) => p - 1);
   };
 
   const goToNext = () => {
-    if (currentPage < numPages) setCurrentPage((p) => p + 1);
+    if (currentPage < maxAllowedPage) setCurrentPage((p) => p + 1);
   };
 
   const zoomIn = () => setScale((s) => Math.min(s + 0.25, 3));
@@ -149,7 +152,7 @@ export function PdfViewer({
   const resetZoom = () => setScale(1.5);
 
   const displayTotalPages = totalPages || numPages;
-  const isRestricted = !purchased && numPages < (totalPages || Infinity);
+  const isRestricted = !purchased && numPages > PREVIEW_PAGE_LIMIT;
 
   if (loading) {
     return (
