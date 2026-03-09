@@ -287,7 +287,7 @@ export default function Admin() {
 
   const resetForm = () => {
     setTitle(""); setDescription(""); setPrice(""); setOriginalPrice(""); setCategory(""); setPages("");
-    setPdfFile(null); setCoverFile(null);
+    setPdfFile(null); setCoverFile(null); setAddIsBestseller(false); setAddIsFeatured(false); setAddRating("0"); setAddReviewsCount("0");
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -324,6 +324,10 @@ export default function Admin() {
         cover_url: coverUrl,
         user_id: user.id,
         is_published: true,
+        is_bestseller: addIsBestseller,
+        is_featured: addIsFeatured,
+        rating: parseFloat(addRating) || 0,
+        reviews_count: parseInt(addReviewsCount) || 0,
       });
       if (insertError) throw insertError;
 
@@ -349,6 +353,8 @@ export default function Admin() {
     setEditPages(pdf.pages ? String(pdf.pages) : "");
     setEditIsBestseller(pdf.is_bestseller);
     setEditIsFeatured(pdf.is_featured);
+    setEditRating(String(pdf.rating));
+    setEditReviewsCount(String(pdf.reviews_count));
     setEditCoverFile(null);
     setEditDialogOpen(true);
   };
@@ -377,6 +383,8 @@ export default function Admin() {
         pages: parseInt(editPages) || null,
         is_bestseller: editIsBestseller,
         is_featured: editIsFeatured,
+        rating: parseFloat(editRating) || 0,
+        reviews_count: parseInt(editReviewsCount) || 0,
         cover_url: coverUrl,
       }).eq("id", editingPdf.id);
       if (error) throw error;
