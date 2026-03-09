@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/ProductCard";
 import { products, getBestsellers, getFeaturedProducts, categories } from "@/data/products";
 import { ArrowRight, BookOpen, Download, Shield, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { AnimatedGrid, AnimatedItem } from "@/components/AnimatedSection";
 
 export default function Home() {
   const navigate = useNavigate();
