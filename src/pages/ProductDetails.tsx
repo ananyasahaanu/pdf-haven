@@ -169,46 +169,14 @@ export default function ProductDetails() {
 
           <div className="mt-10">
             <h2 className="font-display text-xl font-bold mb-4"><Eye className="mr-2 inline h-5 w-5" /> Preview</h2>
-            <Card className="overflow-hidden">
-              <CardContent className="p-0 relative">
-                {previewLoading && (
-                  <div className="flex items-center justify-center h-[600px] bg-secondary/50">
-                    <div className="text-center space-y-3">
-                      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-                      <p className="text-sm text-muted-foreground">Loading PDF preview...</p>
-                    </div>
-                  </div>
-                )}
-                <iframe
-                  src={`${product.pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1`}
-                  className={`w-full border-0 ${previewLoading ? 'h-0' : 'h-[600px]'}`}
-                  title={`Preview of ${product.title}`}
-                  onLoad={() => setPreviewLoading(false)}
-                />
-              </CardContent>
-            </Card>
-            <div className="mt-3 flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                Showing preview of "{product.title}" • {product.pages || "N/A"} pages total
-              </p>
-              <Button variant="ghost" size="sm" asChild>
-                <a href={product.pdfUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="mr-1 h-3 w-3" /> Open in new tab
-                </a>
-              </Button>
-            </div>
-
-            {!purchased && (
-              <div className="relative mt-4">
-                <div className="flex flex-col items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm border border-border p-6">
-                  <Lock className="h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-sm font-medium">Purchase to download and access offline</p>
-                  <Button size="sm" className="mt-3 gradient-bg text-primary-foreground border-0" onClick={() => navigate(isAuthenticated ? `/payment/${product.id}` : "/login")}>
-                    Buy Now - ৳{product.price}
-                  </Button>
-                </div>
-              </div>
-            )}
+            <PdfViewer
+              pdfUrl={previewUrl}
+              purchased={purchased}
+              totalPages={product.pages}
+              productTitle={product.title}
+              price={product.price}
+              onBuyClick={() => navigate(isAuthenticated ? `/payment/${product.id}` : "/login")}
+            />
           </div>
 
           <ReviewSection productId={product.id} />
