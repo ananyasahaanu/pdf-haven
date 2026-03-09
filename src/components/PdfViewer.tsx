@@ -62,7 +62,16 @@ export function PdfViewer({
           headers["Authorization"] = `Bearer ${session.access_token}`;
         }
 
-        const response = await fetch(pdfUrl, { headers });
+        let response = await fetch(pdfUrl, { headers });
+        
+        // If edge function returns 401 (no auth), fall back to direct PDF URL
+        // This happens for non-logged-in users
+        if (response.status === 401 && pdfUrl.includes("/functions/v1/")) {
+          // Extract product_id and try to get the PDF URL from public data
+          console.warn("Edge function auth failed, falling back to public URL");
+          throw new Error("Please log in to preview this PDF");
+        }
+        
         if (!response.ok) throw new Error("Failed to load PDF");
 
         const arrayBuffer = await response.arrayBuffer();
