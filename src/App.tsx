@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { PageTransition } from "@/components/PageTransition";
+import { BackgroundDecoration } from "@/components/BackgroundDecoration";
 import Home from "./pages/Home";
 import Browse from "./pages/Browse";
 import ProductDetails from "./pages/ProductDetails";
@@ -28,19 +30,22 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <div className="flex min-h-screen flex-col">
+              <BackgroundDecoration />
               <Navbar />
               <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/browse" element={<Browse />} />
-                  <Route path="/product/:id" element={<ProductDetails />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/payment/:id" element={<Payment />} />
-                  <Route path="/library" element={<Library />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <PageTransition>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/browse" element={<Browse />} />
+                    <Route path="/product/:id" element={<ProductDetails />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/payment/:id" element={<Payment />} />
+                    <Route path="/library" element={<Library />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </PageTransition>
               </main>
               <Footer />
             </div>
