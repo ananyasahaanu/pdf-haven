@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/ProductCard";
 import { products, getBestsellers, getFeaturedProducts, categories } from "@/data/products";
 import { ArrowRight, BookOpen, Download, Shield, Sparkles, TrendingUp, Zap } from "lucide-react";
-import heroBg from "@/assets/hero-bg.jpg";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -15,17 +14,40 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 -z-10">
-          <img
-            src={heroBg}
-            alt=""
-            className="h-full w-full object-cover"
-          />
-          {/* Overlay for readability */}
-          <div className="absolute inset-0 bg-background/70 dark:bg-background/80 backdrop-blur-sm" />
-          {/* Gradient fade to content */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+        {/* Abstract Background Elements */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          {/* Large gradient circle - top right */}
+          <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary/20 to-premium-glow/20 blur-3xl" />
+          
+          {/* Medium circle - left */}
+          <div className="absolute top-1/3 -left-20 h-[300px] w-[300px] rounded-full bg-gradient-to-tr from-primary/15 to-transparent blur-2xl" />
+          
+          {/* Grid pattern */}
+          <svg className="absolute inset-0 h-full w-full opacity-[0.03] dark:opacity-[0.05]" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
+          
+          {/* Floating shapes */}
+          <div className="absolute top-20 right-1/4 h-20 w-20 rounded-2xl bg-primary/10 rotate-12 animate-float" />
+          <div className="absolute bottom-32 left-1/4 h-16 w-16 rounded-full bg-premium-glow/10 animate-float" style={{ animationDelay: "1s" }} />
+          <div className="absolute top-1/2 right-20 h-12 w-12 rounded-lg bg-accent/30 -rotate-12 animate-float" style={{ animationDelay: "2s" }} />
+          
+          {/* Diagonal lines */}
+          <svg className="absolute bottom-0 left-0 h-64 w-64 opacity-[0.05]" viewBox="0 0 200 200">
+            <line x1="0" y1="200" x2="200" y2="0" stroke="currentColor" strokeWidth="1" />
+            <line x1="0" y1="150" x2="150" y2="0" stroke="currentColor" strokeWidth="1" />
+            <line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" strokeWidth="1" />
+          </svg>
+          
+          {/* Dotted circle */}
+          <svg className="absolute top-40 left-20 h-32 w-32 opacity-[0.08] dark:opacity-[0.12]" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
+          </svg>
         </div>
 
         <div className="container py-20 md:py-32">
@@ -63,7 +85,7 @@ export default function Home() {
             </div>
 
             {/* Stats */}
-            <div className="mt-16 grid grid-cols-3 gap-8">
+            <div className="mt-16 grid grid-cols-3 gap-4 md:gap-8">
               {[
                 { label: "PDFs Available", value: `${products.length}+`, icon: BookOpen },
                 { label: "Happy Readers", value: "10K+", icon: TrendingUp },

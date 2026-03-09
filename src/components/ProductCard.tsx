@@ -20,7 +20,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="group overflow-hidden hover-lift border-border/50 bg-card">
       {/* Cover Image */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
+      <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
         <img
           src={product.coverImage}
           alt={product.title}
