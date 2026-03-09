@@ -1,11 +1,12 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useProduct } from "@/hooks/useProducts";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, CheckCircle, Download, Eye, Lock, ShoppingCart, Star, BookOpen } from "lucide-react";
+import { ArrowLeft, CheckCircle, Download, Eye, ExternalLink, Lock, ShoppingCart, Star, BookOpen } from "lucide-react";
 import { ReviewSection } from "@/components/ReviewSection";
 import { WishlistButton } from "@/components/WishlistButton";
 import { ShareButtons } from "@/components/ShareButtons";
