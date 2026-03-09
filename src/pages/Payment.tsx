@@ -7,21 +7,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle, CreditCard, Phone, Shield } from "lucide-react";
+import { ArrowLeft, CheckCircle, Phone, Send, Loader2, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-type PaymentMethod = "bkash" | "nagad" | "card";
+type PaymentMethod = "bkash" | "nagad";
 
 export default function Payment() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { purchaseProduct, hasPurchased, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [method, setMethod] = useState<PaymentMethod>("bkash");
-  const [processing, setProcessing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [customerName, setCustomerName] = useState(user?.name || "");
+  const [customerMobile, setCustomerMobile] = useState("");
+  const [transactionId, setTransactionId] = useState("");
 
   const product = getProductById(id || "");
+  const PAYMENT_NUMBER = "01779379894";
 
   if (!isAuthenticated) {
     navigate("/login");
@@ -37,18 +42,39 @@ export default function Payment() {
     );
   }
 
-  if (hasPurchased(product.id) && !success) {
-    navigate(`/product/${product.id}`);
-    return null;
-  }
+  const handleSubmit = async () => {
+    if (!customerName.trim() || !customerMobile.trim() || !transactionId.trim()) {
+      toast({ title: "সব তথ্য পূরণ করুন", description: "নাম, মোবাইল নম্বর এবং ট্রানজেকশন আইডি আবশ্যক।", variant: "destructive" });
+      return;
+    }
 
-  const handlePayment = async () => {
-    setProcessing(true);
-    await new Promise((r) => setTimeout(r, 2000)); // Simulate payment
-    purchaseProduct(product.id);
-    setSuccess(true);
-    setProcessing(false);
-    toast({ title: "Payment successful!", description: `"${product.title}" has been added to your library.` });
+    if (!user) return;
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("purchase_requests").insert({
+        user_id: user.id,
+        product_id: product.id,
+        product_title: product.title,
+        product_price: product.price,
+        customer_name: customerName.trim(),
+        customer_mobile: customerMobile.trim(),
+        payment_method: method,
+        transaction_id: transactionId.trim(),
+      });
+      if (error) throw error;
+      setSuccess(true);
+      toast({ title: "অর্ডার রিকোয়েস্ট পাঠানো হয়েছে!", description: "অ্যাডমিন অনুমোদন করলে আপনাকে জানানো হবে।" });
+    } catch (err: any) {
+      toast({ title: "সমস্যা হয়েছে", description: err.message, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const copyNumber = () => {
+    navigator.clipboard.writeText(PAYMENT_NUMBER);
+    toast({ title: "নম্বর কপি হয়েছে!", description: PAYMENT_NUMBER });
   };
 
   if (success) {
@@ -59,14 +85,17 @@ export default function Payment() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
               <CheckCircle className="h-8 w-8 text-success" />
             </div>
-            <h2 className="font-display text-2xl font-bold">Payment Successful!</h2>
-            <p className="mt-2 text-muted-foreground">"{product.title}" is now in your library</p>
+            <h2 className="font-display text-2xl font-bold">অর্ডার রিকোয়েস্ট পাঠানো হয়েছে!</h2>
+            <p className="mt-2 text-muted-foreground">
+              "{product.title}" এর জন্য আপনার রিকোয়েস্ট পেন্ডিং আছে।
+              অ্যাডমিন যাচাই করে অনুমোদন করলে আপনি ডাউনলোড করতে পারবেন।
+            </p>
             <div className="mt-6 flex flex-col gap-2">
               <Button className="gradient-bg text-primary-foreground border-0" onClick={() => navigate("/library")}>
-                Go to My Library
+                আমার লাইব্রেরি দেখুন
               </Button>
-              <Button variant="outline" onClick={() => navigate(`/product/${product.id}`)}>
-                View Product
+              <Button variant="outline" onClick={() => navigate("/browse")}>
+                আরো PDF দেখুন
               </Button>
             </div>
           </CardContent>
@@ -75,10 +104,9 @@ export default function Payment() {
     );
   }
 
-  const methods: { id: PaymentMethod; name: string; icon: React.ReactNode; color: string }[] = [
-    { id: "bkash", name: "bKash", icon: <Phone className="h-5 w-5" />, color: "bg-pink-500/10 text-pink-600 border-pink-200" },
-    { id: "nagad", name: "Nagad", icon: <Phone className="h-5 w-5" />, color: "bg-orange-500/10 text-orange-600 border-orange-200" },
-    { id: "card", name: "Card", icon: <CreditCard className="h-5 w-5" />, color: "bg-blue-500/10 text-blue-600 border-blue-200" },
+  const methods: { id: PaymentMethod; name: string; color: string }[] = [
+    { id: "bkash", name: "bKash", color: "bg-pink-500/10 text-pink-600 border-pink-200 dark:border-pink-800" },
+    { id: "nagad", name: "Nagad", color: "bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-800" },
   ];
 
   return (
@@ -88,14 +116,15 @@ export default function Payment() {
       </Button>
 
       <div className="mx-auto max-w-2xl">
-        <h1 className="font-display text-2xl font-bold mb-6">Complete Payment</h1>
+        <h1 className="font-display text-2xl font-bold mb-6">পেমেন্ট সম্পন্ন করুন</h1>
 
         <div className="grid gap-6 md:grid-cols-5">
           {/* Payment Form */}
           <div className="md:col-span-3 space-y-6">
+            {/* Step 1: Choose method */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Payment Method</CardTitle>
+                <CardTitle className="text-lg">১. পেমেন্ট মেথড বাছাই করুন</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {methods.map((m) => (
@@ -107,7 +136,7 @@ export default function Payment() {
                     }`}
                   >
                     <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${m.color}`}>
-                      {m.icon}
+                      <Phone className="h-5 w-5" />
                     </div>
                     <span className="font-medium">{m.name}</span>
                     {method === m.id && <CheckCircle className="ml-auto h-5 w-5 text-primary" />}
@@ -116,52 +145,74 @@ export default function Payment() {
               </CardContent>
             </Card>
 
-            {/* Payment Details */}
+            {/* Step 2: Send money instructions */}
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="text-lg">২. Send Money করুন</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  আপনার <strong>{method === "bkash" ? "bKash" : "Nagad"}</strong> অ্যাপ থেকে নিচের নম্বরে <strong>৳{product.price}</strong> Send Money করুন:
+                </p>
+                <div className="flex items-center gap-2 rounded-lg bg-background border border-border p-3">
+                  <Phone className="h-5 w-5 text-primary" />
+                  <span className="font-display text-xl font-bold text-primary tracking-wider">{PAYMENT_NUMBER}</span>
+                  <Button variant="ghost" size="icon" className="ml-auto h-8 w-8" onClick={copyNumber}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Send Money করার পর আপনি একটি Transaction ID পাবেন। সেটি নিচে দিন।
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Step 3: Fill details */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">
-                  {method === "card" ? "Card Details" : `${method === "bkash" ? "bKash" : "Nagad"} Number`}
-                </CardTitle>
+                <CardTitle className="text-lg">৩. আপনার তথ্য দিন</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {method === "card" ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Card Number</Label>
-                      <Input placeholder="4242 4242 4242 4242" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Expiry</Label>
-                        <Input placeholder="MM/YY" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>CVC</Label>
-                        <Input placeholder="123" />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    <Label>Mobile Number</Label>
-                    <Input placeholder={method === "bkash" ? "01XXXXXXXXX" : "01XXXXXXXXX"} />
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label>আপনার নাম *</Label>
+                  <Input
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="আপনার পুরো নাম"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>মোবাইল নম্বর (যেটি থেকে পাঠিয়েছেন) *</Label>
+                  <Input
+                    value={customerMobile}
+                    onChange={(e) => setCustomerMobile(e.target.value)}
+                    placeholder="01XXXXXXXXX"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Transaction ID *</Label>
+                  <Input
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder="যেমন: TXN1234ABCD"
+                    required
+                  />
+                </div>
               </CardContent>
             </Card>
 
             <Button
               size="lg"
               className="w-full gradient-bg text-primary-foreground border-0 premium-shadow"
-              onClick={handlePayment}
-              disabled={processing}
+              onClick={handleSubmit}
+              disabled={submitting}
             >
-              {processing ? (
-                <>Processing...</>
+              {submitting ? (
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> সাবমিট হচ্ছে...</>
               ) : (
-                <>
-                  <Shield className="mr-2 h-5 w-5" /> Pay ${product.price}
-                </>
+                <><Send className="mr-2 h-5 w-5" /> অর্ডার রিকোয়েস্ট সাবমিট করুন</>
               )}
             </Button>
           </div>
@@ -170,7 +221,7 @@ export default function Payment() {
           <div className="md:col-span-2">
             <Card className="sticky top-24">
               <CardHeader>
-                <CardTitle className="text-lg">Order Summary</CardTitle>
+                <CardTitle className="text-lg">অর্ডার সারাংশ</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-3">
@@ -187,22 +238,22 @@ export default function Payment() {
                 </div>
                 <div className="border-t border-border pt-3 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Price</span>
+                    <span className="text-muted-foreground">মূল্য</span>
                     {product.originalPrice ? (
-                      <span className="line-through text-muted-foreground">${product.originalPrice}</span>
+                      <span className="line-through text-muted-foreground">৳{product.originalPrice}</span>
                     ) : (
-                      <span>${product.price}</span>
+                      <span>৳{product.price}</span>
                     )}
                   </div>
                   {product.originalPrice && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Discount</span>
-                      <span className="text-success">-${(product.originalPrice - product.price).toFixed(2)}</span>
+                      <span className="text-muted-foreground">ছাড়</span>
+                      <span className="text-success">-৳{(product.originalPrice - product.price).toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between border-t border-border pt-2 font-bold">
-                    <span>Total</span>
-                    <span className="text-primary">${product.price}</span>
+                    <span>মোট</span>
+                    <span className="text-primary">৳{product.price}</span>
                   </div>
                 </div>
               </CardContent>
