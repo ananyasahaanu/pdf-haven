@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { useProducts, useCategories } from "@/hooks/useProducts";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function Browse() {
   const [searchParams, setSearchParams] = useSearchParams();
