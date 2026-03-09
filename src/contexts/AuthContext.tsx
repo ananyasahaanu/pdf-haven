@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   purchasedIds: string[];
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   purchaseProduct: (productId: string) => void;
