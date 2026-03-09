@@ -223,7 +223,7 @@ export function PdfViewer({
             size="icon"
             className="h-8 w-8"
             onClick={goToNext}
-            disabled={currentPage >= numPages}
+            disabled={currentPage >= maxAllowedPage}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
