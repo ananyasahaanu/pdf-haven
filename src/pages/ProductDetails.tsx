@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle, Download, Eye, Lock, ShoppingCart, Star, BookOpen } from "lucide-react";
 import { ReviewSection } from "@/components/ReviewSection";
 import { WishlistButton } from "@/components/WishlistButton";
+import { ShareButtons } from "@/components/ShareButtons";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
