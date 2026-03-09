@@ -81,7 +81,7 @@ export default function Library() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-display font-semibold truncate">{req.product_title}</h3>
                       <div className="mt-1 flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs bg-success/10 text-success border-0">
+                        <Badge className="text-xs bg-success text-success-foreground border-0">
                           ✅ অনুমোদিত
                         </Badge>
                         <span className="text-xs text-muted-foreground">৳{Number(req.product_price).toFixed(0)}</span>
