@@ -19,6 +19,7 @@ import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { CouponManagement } from "@/components/CouponManagement";
 import { BannerManagement } from "@/components/BannerManagement";
 import { BrandingManagement } from "@/components/BrandingManagement";
+import { SEOManagement } from "@/components/SEOManagement";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -745,6 +746,7 @@ export default function Admin() {
         {/* Settings Tab */}
         <TabsContent value="settings" className="mt-4 space-y-6">
           <BrandingManagement />
+          <SEOManagement />
           <BannerManagement />
           <Card>
             <CardContent className="p-6">
