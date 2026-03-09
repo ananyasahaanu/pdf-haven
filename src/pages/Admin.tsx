@@ -742,7 +742,8 @@ export default function Admin() {
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="mt-4">
+        <TabsContent value="settings" className="mt-4 space-y-6">
+          <BannerManagement />
           <Card>
             <CardContent className="p-6">
               <h3 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
