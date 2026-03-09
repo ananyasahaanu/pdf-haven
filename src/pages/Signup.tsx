@@ -27,7 +27,7 @@ export default function Signup() {
       toast({ title: "Account created!", description: "Welcome to PDFStore." });
       navigate("/");
     } else {
-      toast({ title: "Signup failed", description: "Email already exists.", variant: "destructive" });
+      toast({ title: "Signup failed", description: "Email already exists or password too short.", variant: "destructive" });
     }
     setLoading(false);
   };

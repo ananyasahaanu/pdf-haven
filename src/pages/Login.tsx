@@ -70,18 +70,6 @@ export default function Login() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-
-          <div className="mt-6 space-y-3">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-              <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">Demo Accounts</span></div>
-            </div>
-            <div className="rounded-lg bg-secondary p-3 text-xs space-y-1">
-              <p><strong>User:</strong> user@demo.com / demo123</p>
-              <p><strong>Admin:</strong> admin@demo.com / admin123</p>
-            </div>
-          </div>
-
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link to="/signup" className="font-medium text-primary hover:underline">Sign up</Link>
