@@ -14,7 +14,8 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, ShoppingBag, Trash2, Upload, XCircle, Clock } from "lucide-react";
+import { BookOpen, CheckCircle, Edit, FileText, Loader2, Package, Plus, ShoppingBag, Trash2, Upload, XCircle, Clock, Users, Shield, UserMinus } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -37,6 +38,8 @@ export default function Admin() {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [addingAdmin, setAddingAdmin] = useState(false);
 
   // Fetch uploaded PDFs
   const { data: uploadedPdfs = [] } = useQuery({
@@ -119,6 +122,89 @@ export default function Admin() {
     },
   });
 
+  // Fetch all admins
+  const { data: adminUsers = [], refetch: refetchAdmins } = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("id, user_id, role")
+        .eq("role", "admin");
+      if (error) throw error;
+      // Get profiles for each admin
+      const userIds = data.map((r) => r.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, email");
+      // Filter profiles that match admin user_ids - we need to handle RLS
+      // Admins can only see their own profile, so we'll use what we have
+      return data.map((role) => {
+        const profile = profiles?.find((p) => p.id === role.user_id);
+        return {
+          ...role,
+          name: profile?.name || "Unknown",
+          email: profile?.email || "Unknown",
+        };
+      });
+    },
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  // Add admin by email
+  const handleAddAdmin = async () => {
+    if (!newAdminEmail.trim()) return;
+    setAddingAdmin(true);
+    try {
+      // Find user by email in profiles
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .eq("email", newAdminEmail.trim())
+        .single();
+      if (profileError || !profile) {
+        toast({ title: "ইউজার পাওয়া যায়নি", description: "এই ইমেইল দিয়ে কোনো ইউজার নিবন্ধিত নেই।", variant: "destructive" });
+        return;
+      }
+      const { error: insertError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: profile.id, role: "admin" });
+      if (insertError) {
+        if (insertError.code === "23505") {
+          toast({ title: "ইতিমধ্যে অ্যাডমিন", description: "এই ইউজার আগে থেকেই অ্যাডমিন।", variant: "destructive" });
+        } else {
+          throw insertError;
+        }
+        return;
+      }
+      toast({ title: "অ্যাডমিন যোগ হয়েছে!", description: `${newAdminEmail} কে অ্যাডমিন করা হয়েছে।` });
+      setNewAdminEmail("");
+      refetchAdmins();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setAddingAdmin(false);
+    }
+  };
+
+  // Remove admin
+  const handleRemoveAdmin = async (roleId: string, email: string) => {
+    if (email === user?.email) {
+      toast({ title: "নিজেকে রিমুভ করা যাবে না", variant: "destructive" });
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("id", roleId);
+      if (error) throw error;
+      toast({ title: "অ্যাডমিন রিমুভ হয়েছে", description: `${email} আর অ্যাডমিন নয়।` });
+      refetchAdmins();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const resetForm = () => {
     setTitle(""); setDescription(""); setPrice(""); setCategory(""); setPages("");
     setPdfFile(null); setCoverFile(null);
@@ -191,10 +277,11 @@ export default function Admin() {
               <Plus className="mr-2 h-4 w-4" /> Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh]">
             <DialogHeader>
               <DialogTitle className="font-display">Upload New PDF</DialogTitle>
             </DialogHeader>
+            <ScrollArea className="max-h-[70vh] pr-4">
             <form onSubmit={handleAddProduct} className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label>Title *</Label>
@@ -238,6 +325,7 @@ export default function Admin() {
                 {uploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Add Product"}
               </Button>
             </form>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </div>
@@ -301,6 +389,9 @@ export default function Admin() {
             )}
           </TabsTrigger>
           <TabsTrigger value="products">Uploaded PDFs</TabsTrigger>
+          <TabsTrigger value="users">
+            <Users className="mr-1 h-4 w-4" /> ইউজার ম্যানেজমেন্ট
+          </TabsTrigger>
         </TabsList>
 
         {/* Orders Tab */}
@@ -444,6 +535,72 @@ export default function Admin() {
                 )}
               </TableBody>
             </Table>
+          </Card>
+        </TabsContent>
+
+        {/* User Management Tab */}
+        <TabsContent value="users" className="mt-4">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
+                <Shield className="h-5 w-5" /> অ্যাডমিন ম্যানেজমেন্ট
+              </h3>
+              <div className="flex gap-2 mb-6">
+                <Input
+                  placeholder="ইমেইল দিয়ে অ্যাডমিন যোগ করুন..."
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddAdmin()}
+                />
+                <Button onClick={handleAddAdmin} disabled={addingAdmin || !newAdminEmail.trim()}>
+                  {addingAdmin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+                  যোগ করুন
+                </Button>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>নাম</TableHead>
+                    <TableHead>ইমেইল</TableHead>
+                    <TableHead>রোল</TableHead>
+                    <TableHead className="text-right">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {adminUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        কোনো অ্যাডমিন নেই।
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    adminUsers.map((admin) => (
+                      <TableRow key={admin.id}>
+                        <TableCell className="font-medium">{admin.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{admin.email}</TableCell>
+                        <TableCell>
+                          <Badge variant="default" className="text-xs">
+                            <Shield className="h-3 w-3 mr-1" /> Admin
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => handleRemoveAdmin(admin.id, admin.email)}
+                            disabled={admin.email === user?.email}
+                            title={admin.email === user?.email ? "নিজেকে রিমুভ করা যাবে না" : "অ্যাডমিন রিমুভ করুন"}
+                          >
+                            <UserMinus className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
