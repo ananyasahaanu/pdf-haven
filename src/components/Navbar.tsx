@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { useState } from "react";
 export function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { siteName, logoUrl } = useSiteSettings();
   const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,10 +40,16 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-bg">
-            <BookOpen className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="gradient-text">PDFStore</span>
+          {logoUrl ? (
+            <img src={logoUrl} alt={siteName} className="h-8 max-w-[160px] object-contain" />
+          ) : (
+            <>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-bg">
+                <BookOpen className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="gradient-text">{siteName}</span>
+            </>
+          )}
         </Link>
 
         {/* Desktop Navigation */}

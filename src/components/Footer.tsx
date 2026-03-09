@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { BookOpen, Github, Mail, Twitter } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 export function Footer() {
   const { t } = useLanguage();
+  const { siteName, logoUrl, tagline } = useSiteSettings();
 
   return (
     <footer className="border-t border-border/40 bg-secondary/30">
@@ -11,12 +13,18 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-4">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-bg">
-                <BookOpen className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="gradient-text">PDFStore</span>
+              {logoUrl ? (
+                <img src={logoUrl} alt={siteName} className="h-8 max-w-[160px] object-contain" />
+              ) : (
+                <>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-bg">
+                    <BookOpen className="h-4 w-4 text-primary-foreground" />
+                  </div>
+                  <span className="gradient-text">{siteName}</span>
+                </>
+              )}
             </Link>
-            <p className="text-sm text-muted-foreground">{t("footer.desc")}</p>
+            <p className="text-sm text-muted-foreground">{tagline}</p>
             <div className="flex gap-3">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></a>
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Github className="h-5 w-5" /></a>
