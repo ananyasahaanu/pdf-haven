@@ -18,15 +18,9 @@ export function Footer() {
               Premium digital marketplace for educational PDFs. Learn from the best authors worldwide.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Mail className="h-5 w-5" />
-              </a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors"><Github className="h-5 w-5" /></a>
+              <a href="mailto:bsrittik@gmail.com" className="text-muted-foreground hover:text-primary transition-colors"><Mail className="h-5 w-5" /></a>
             </div>
           </div>
 
@@ -35,9 +29,9 @@ export function Footer() {
             <h4 className="mb-4 font-display font-semibold">Quick Links</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link to="/browse" className="hover:text-primary transition-colors">Browse PDFs</Link></li>
+              <li><Link to="/about" className="hover:text-primary transition-colors">About CEO</Link></li>
               <li><Link to="/browse?category=Programming" className="hover:text-primary transition-colors">Programming</Link></li>
               <li><Link to="/browse?category=Design" className="hover:text-primary transition-colors">Design</Link></li>
-              <li><Link to="/browse?category=Business" className="hover:text-primary transition-colors">Business</Link></li>
             </ul>
           </div>
 
@@ -45,10 +39,10 @@ export function Footer() {
           <div>
             <h4 className="mb-4 font-display font-semibold">Support</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Refund Policy</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">FAQ</a></li>
+              <li><Link to="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
+              <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
+              <li><Link to="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link></li>
+              <li><Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
@@ -56,9 +50,9 @@ export function Footer() {
           <div>
             <h4 className="mb-4 font-display font-semibold">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Cookie Policy</a></li>
+              <li><Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/cookies" className="hover:text-primary transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
