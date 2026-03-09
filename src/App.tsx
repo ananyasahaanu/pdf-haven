@@ -18,6 +18,7 @@ import Signup from "./pages/Signup";
 import Payment from "./pages/Payment";
 import Library from "./pages/Library";
 import Admin from "./pages/Admin";
+import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import HelpCenter from "./pages/HelpCenter";
@@ -54,6 +55,7 @@ const App = () => (
                       <Route path="/signup" element={<Signup />} />
                       <Route path="/payment/:id" element={<Payment />} />
                       <Route path="/library" element={<Library />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/admin" element={<Admin />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
