@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, LayoutDashboard, Languages, Library, LogIn, LogOut, Menu, Moon, Search, Shield, Sun, User, X } from "lucide-react";
+import { BookOpen, Heart, LayoutDashboard, Languages, Library, LogIn, LogOut, Menu, Moon, Search, Shield, Sun, User, X } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -58,6 +58,12 @@ export function Navbar() {
                 <Button variant="ghost" size="sm">
                   <Library className="mr-1 h-4 w-4" />
                   {t("nav.library")}
+                </Button>
+              </Link>
+              <Link to="/wishlist">
+                <Button variant="ghost" size="sm">
+                  <Heart className="mr-1 h-4 w-4" />
+                  Wishlist
                 </Button>
               </Link>
               <Link to="/dashboard">
@@ -134,6 +140,9 @@ export function Navbar() {
                 <DropdownMenuItem onClick={() => navigate("/library")}>
                   <Library className="mr-2 h-4 w-4" /> {t("nav.library")}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/wishlist")}>
+                  <Heart className="mr-2 h-4 w-4" /> Wishlist
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                   <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
                 </DropdownMenuItem>
@@ -184,6 +193,11 @@ export function Navbar() {
                 <Link to="/library" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start">
                     <Library className="mr-2 h-4 w-4" /> {t("nav.library")}
+                  </Button>
+                </Link>
+                <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <Heart className="mr-2 h-4 w-4" /> Wishlist
                   </Button>
                 </Link>
                 <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
